@@ -1,0 +1,43 @@
+Function rox(ByVal v, key As String)
+    Dim ii() As Byte
+    Dim iiL As Integer
+    ii = key
+    iiL = UBound(ii) + 1
+
+    For i = 0 To UBound(v)
+        v(i) = (v(i) Xor ii(2 * i Mod iiL)) And 255
+    Next i
+    rox = v
+End Function
+
+Function cae(ByVal v, key As Integer)
+    For i = 0 To UBound(v)
+        v(i) = (v(i) - key) And 255
+    Next i
+    cae = v
+End Function
+
+Function b64(v, iteration As Integer, Optional rawInput As Boolean = True)
+    Dim oXML, oNode
+    Dim o() As Byte
+    Dim s As String
+
+    If rawInput Then
+        v = StrConv(v, vbUnicode)
+    End If
+
+    For i = 1 To iteration
+        Set oXML = CreateObject("Msxml2.DOMDocument.3.0")
+        Set oNode = oXML.CreateElement("base64")
+        oNode.DataType = "bin.base64"
+        oNode.Text = v
+        o = oNode.nodeTypedValue
+        s = o
+        v = StrConv(s, vbUnicode)
+    Next i
+
+    b64 = o
+
+    Set oNode = Nothing
+    Set oXML = Nothing
+End Function

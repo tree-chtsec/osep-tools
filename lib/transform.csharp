@@ -1,0 +1,26 @@
+static byte[] xor(byte[] v, string key)
+{
+    byte[] b = new byte[v.Length];
+    byte[] kb = System.Text.Encoding.ASCII.GetBytes(key);
+    for(int i = 0; i < b.Length; i++) {
+        b[i] = (byte)((v[i] ^ kb[i % kb.Length]) & 0xff);
+    }
+    return b;
+}
+static byte[] cae(byte[] v, int key)
+{
+    byte[] b = new byte[v.Length];
+    for(int i = 0; i < b.Length; i++) {
+        b[i] = (byte)((v[i] -key) & 0xff);
+    }
+    return b;
+}
+static byte[] b64(byte[] v, int key)
+{
+    List<byte> g = new List<byte>(v);
+
+    for(int i = 0; i < key; i++) {
+        g = new List<byte>(System.Convert.FromBase64String(System.Text.Encoding.ASCII.GetString(g.ToArray())));
+    }
+    return g.ToArray();
+}

