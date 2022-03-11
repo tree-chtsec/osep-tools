@@ -88,6 +88,11 @@
             "description": "[C#] [Auto] Bypass PS CLM with InstallUtil",
             "filename": "bypass_clm_installutil.ps1"
         },
+        "installutil-4": {
+            "lang": "powershell",
+            "description": "[C#] FLM pseudo Powershell ( Invoke-FLM )",
+            "filename": "bypass_clm_installutil_pseudoShell.ps1"
+        },
         "service-1": {
             "lang": "powershell",
             "description": "[C#] [Auto] Bypass PS CLM with ServiceBinary",
@@ -95,7 +100,7 @@
         },
         "service-2": {
             "lang": "powershell",
-            "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary(Invoke-ServicePwn -Name xxx -Command whoami)",
+            "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary ( Invoke-ServicePwn -Name xxx -Command whoami )",
             "filename": "bypass_clm_servicepwn.ps1"
         },
         "c-1": {
@@ -115,7 +120,7 @@
     },
     "common-pstool": [
         {
-            "name": "LAPSToolkit.ps1",
+            "name": "LAPSToolkit.ps1 ( Get-LAPSComputers )",
             "filepath": "../LAPSToolkit-master/LAPSToolkit.ps1"
         },
         {
@@ -182,11 +187,19 @@
             "filepath": "../ADRecon-master/ADRecon.ps1"
         },
 	{
-	    "name": "Invoke-GodWrite.ps1 (Invoke-GodWrite -Victim appsrv01 -Domain prod.corp1.com -DomainController cdc01)",
+	    "name": "Invoke-GodWrite -Victim appsrv01 -Domain prod.corp1.com -DomainController cdc01",
 	    "filepath": "Abuse_GenericWrite_Computer.ps1",
 	    "dependency": [
                 "PowerView.ps1",
                 "PowerMAD.ps1",
+		"Rubeus"
+	    ]
+	},
+	{
+	    "name": "Invoke-TrustTicket -Rc4 <trustKey> -From dc01.final.com -To dc02.dev.final.com -SpnT ldap/dc02.dev.final.com",
+	    "filepath": "Create_TrustTicket.ps1",
+	    "dependency": [
+                "PowerView.ps1",
 		"Rubeus"
 	    ]
 	}

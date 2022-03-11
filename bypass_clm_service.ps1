@@ -31,7 +31,6 @@ namespace WindowsService1
                 PowerShell ps = PowerShell.Create();
                 ps.Runspace = rs;
 
-                ps.AddScript("[system.net.webrequest]::DefaultWebProxy = $null");
                 ps.AddScript("%psraw%");
                 foreach (PSObject result in ps.Invoke()) {
                     Console.WriteLine("{0}", result);
