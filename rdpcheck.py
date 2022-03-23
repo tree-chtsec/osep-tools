@@ -19,9 +19,13 @@ def info2str(o):
 #print('Restricted Admin mode default disabled. You can\'t PTH even if you have RDP access.')
 #print('Nevertheless, hydra is enough for brute forcing...')
 
-def run(target, username, password, domain=None, useProxy=False, timeout=10):
+# timeout is useless, just to prevent hanging infinitely
+def run(target, username, password, domain=None, useProxy=False, timeout=60):
     domain = domain or '.'
-    binary = 'proxychains xfreerdp' if useProxy else 'xfreerdp'
+    if useProxy:
+        binary = 'proxychains xfreerdp'
+    else:
+        binary = 'xfreerdp'
     auth_info = info2str(dict(target=target, username=username, password=password, domain=domain))
     cmd = '%s %s /cert-ignore' % (binary, auth_info)
     #print(cmd)

@@ -1,4 +1,3 @@
-Function 
 $csf = New-TemporaryFile;
 $dllf = New-TemporaryFile;
 $newf = "$dllf.exe";

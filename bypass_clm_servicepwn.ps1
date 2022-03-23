@@ -21,6 +21,8 @@ function Invoke-ServicePwn {
         $use32
     )
 
+    $Command = $Command.Replace('"', '""');
+
     $csf = New-TemporaryFile;
     $outf = "$(New-TemporaryFile).exe";
     $coutf = New-TemporaryFile;
