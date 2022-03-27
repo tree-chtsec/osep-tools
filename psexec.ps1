@@ -24,7 +24,7 @@ Function IPsExec
     If ($New) {
         $MS += "sc \\$ComputerName create $ServiceName obj= `"LocalSystem`" start= `"demand`" binPath= `"c:\windows\system32\cmd.exe`"`n";
     }
-    $MS += "sc \\$ComputerName config $ServiceName binPath= `"c:\windows\system32\cmd.exe /c $Command`"`n";
+    $MS += "sc \\$ComputerName config $ServiceName start= `"demand`" binPath= `"c:\windows\system32\cmd.exe /c $Command`"`n";
     $MS += "sc \\$ComputerName start $ServiceName";
     If ($New) {
         $MS += "sc \\$ComputerName delete $ServiceName";

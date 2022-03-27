@@ -30,7 +30,8 @@ def run(target, username, password=None, ntlm=None, domain=None, useProxy=False,
     binary = 'proxychains cme' if useProxy else 'cme'
     binary += ' ' + module
     auth_info = info2str(dict(username=username, password=password, ntlm=ntlm, domain=domain))
-    cmd = '%s %s --exec-method wmiexec %s' % (binary, auth_info, target)
+    ops = '' if module == 'mssql' else '--exec-method wmiexec'
+    cmd = '%s %s %s %s' % (binary, auth_info, ops, target)
     p = subprocess.Popen(cmd, shell=True, stderr=pipe, stdout=pipe, stdin=pipe)
     out, _ = p.communicate()
     out = strip_color(out.decode())

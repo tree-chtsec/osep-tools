@@ -103,6 +103,11 @@
             "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary ( Invoke-ServicePwn -Name SNMPTRAP -Command whoami )",
             "filename": "bypass_clm_servicepwn.ps1"
         },
+        "ppl-1": {
+            "lang": "powershell",
+            "description": "Invoke-KillPPL",
+            "filename": "Kill_PPL.ps1"
+        },
         "psexec-1": {
             "lang": "powershell",
             "description": "[PS] [Generic] IPsExec -ComputerName xxx -Command whoami",
@@ -137,8 +142,8 @@
             "filepath": "../PowerSploit-master/Privesc/PowerUp.ps1"
         },
         {
-            "name": "SharpHound.ps1",
-            "filepath": "../SharpHound.ps1"
+            "name": "SharpHound.ps1 [Failed in Bloodhound 4.1.0]",
+            "filepath": "../SharpHound-old.ps1"
         },
         {
             "name": "MimiKatz.ps1",
@@ -184,7 +189,7 @@
             "filepath": "../Invoke-TheHash/Invoke-WMIExec.ps1"
         },
         {
-            "name": "Invoke-PsExec.ps1 (Invoke-PsExec -Computername appsrv01 -command whoami -resultfile $env:tmp\\out.txt)",
+            "name": "Invoke-PsExec -Computername appsrv01 -command whoami -resultfile $env:tmp\\out.txt",
             "filepath": "../Invoke-PsExec.ps1"
         },
         {
@@ -194,6 +199,14 @@
         {
             "name": "ADRecon.ps1",
             "filepath": "../ADRecon-master/ADRecon.ps1"
+        },
+        {
+            "name": "Invoke-PPLDump",
+            "filepath": "Invoke-PPLDump.ps1"
+        },
+        {
+            "name": "Invoke-Portscan -Hosts \"<cidr|172.16.134.150/29>\" -Ports \"22,80,443,445,1433,3389,5985\" | %{if($_.alive){\"$($_.Hostname),,$($_.openPorts)\"}}",
+            "filepath": "../PowerSploit-master/Recon/Invoke-Portscan.ps1"
         },
 	{
 	    "name": "Invoke-GodWrite -Victim appsrv01 -Domain prod.corp1.com -DomainController cdc01",

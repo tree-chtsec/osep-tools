@@ -13,6 +13,7 @@ from termcolor import cprint
 from tabulate import tabulate
 
 import nthash
+import parallel # borrowed from oswe-tools
 
 class Manager:
     FILE = None
@@ -158,7 +159,9 @@ class RecordManager(Manager):
     def canExec(self, ip=None, adminOnly=False, display=False):
         _df = pd.DataFrame(self.df[self.df['User'].apply(lambda x: not x.endswith('$'))], columns=self.cols)
         # cme smb pwned
-        pwn_cme = _df[(_df['Protocol'] == 'cme-smb') & (_df['Status'] == 2)]
+        pwn_cme_smb = _df[(_df['Protocol'] == 'cme-smb') & (_df['Status'] == 2)]
+        pwn_cme_mssqladm = _df[(_df['Protocol'] == 'cme-mssql') & (_df['Status'] == 2)]
+        pwn_cme_mssql = _df[(_df['Protocol'] == 'cme-mssql') & (_df['Status'] == 1)]
         pwn_rdp = _df[(_df['Protocol'] == 'rdp') & (_df['Status'] == 1)]
         pwn_rdp = pwn_rdp.assign(NTLM='')
 
@@ -168,9 +171,9 @@ class RecordManager(Manager):
         pwn_dumpdu = pwn_dump[pwn_dump['Domain'] != '.']
 
         if adminOnly:
-            pwndf = pd.concat([pwn_cme, pwn_dumpadm])
+            pwndf = pd.concat([pwn_cme_smb, pwn_cme_mssqladm, pwn_dumpadm])
         else:
-            pwndf = pd.concat([pwn_cme, pwn_rdp, pwn_dumpadm, pwn_dumpdu])
+            pwndf = pd.concat([pwn_cme_smb, pwn_cme_mssql, pwn_cme_mssqladm, pwn_rdp, pwn_dumpadm, pwn_dumpdu])
         if ip is not None:
             pwndf = pwndf[pwndf['IP'] == ip]
         pwndf = pwndf.reset_index(drop=True)
@@ -199,8 +202,9 @@ def parse_args():
     parser.add_argument('-t', '--itarget-ip', dest='itarget_ip', help='must be IPv4 format')
     parser.add_argument('-T', '--itarget-name', dest='itarget_name')
     parser.add_argument('--reset', action='store_true')
-    parser.add_argument('--init', action='store_true')
+    #parser.add_argument('--init', action='store_true')
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--noproxy', action='store_true')
     return parser.parse_args()
 
 args = parse_args()
@@ -304,39 +308,51 @@ print('======================')
 
 if args.cme:
     import cmecheck
-    proto = 'cme-smb'
-    for ip, host, portsS in hm.list():
-        ports = portsS.split(' ')
-        if len(rm.canExec(ip=ip, adminOnly=True)) > 0: # skip pwned machine
-            continue
-        if '445' not in ports:
-            continue
-        isInternal = ip.startswith('172')
-        for u, p, n, d in cm.list():
-            if rm.exists((ip, u, p, n, d, proto)):
+    candidates = [
+        ('smb', '445'),
+        ('mssql', '1433')
+    ]
+    for proto, port in candidates:
+        queue = []
+        for ip, host, portsS in hm.list():
+            ports = portsS.split(' ')
+            if len(rm.canExec(ip=ip, adminOnly=True)) > 0: # skip pwned machine
                 continue
-            status = cmecheck.run(ip, username=u, password=p, ntlm=n, domain=d, useProxy=isInternal)
-            rm.add((ip, u, p, n, d, proto, status))
+            if port not in ports:
+                continue
+            isInternal = ip.startswith('172') and (not args.noproxy)
+            for u, p, n, d in cm.list():
+                if rm.exists((ip, u, p, n, d, 'cme-' + proto)):
+                    continue
+
+                queue.append((ip, u, p, n, d, isInternal))
+        def cme_run(_):
+            ip, u, p, n, d, isInternal = _
+            status = cmecheck.run(ip, username=u, password=p, ntlm=n, domain=d, useProxy=isInternal, module=proto)
+            rm.add((ip, u, p, n, d, 'cme-' + proto, status))
             d = d or '.'
             c = p or n
             if status == 2:
                 highlight('[+][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, c, ip), 2)
-                break
+                #break
             elif status == 1:
                 highlight('[|][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, c, ip), 1)
             elif status == 0:
                 print('[-][cme] ("%s\\%s", "%s") @ "%s"' % (d, u, c, ip))
+        if len(queue) > 0:
+            parallel.run(cme_run, queue, verb=True)
 
 if args.rdp:
     import rdpcheck
     proto = 'rdp'
+    queue = []
     for ip, host, portsS in hm.list():
         ports = portsS.split(' ')
         if len(rm.canExec(ip=ip, adminOnly=True)) > 0: # skip pwned machine
             continue
         if '3389' not in ports:
             continue
-        isInternal = ip.startswith('172')
+        isInternal = ip.startswith('172') and (not args.noproxy)
         for u, p, _, d in cm.list():
             #if d and not p: # preserve local user(?) only
             #    continue
@@ -344,13 +360,18 @@ if args.rdp:
                 continue
             if rm.exists((ip, u, p, _, d, proto)):
                 continue
-            status = rdpcheck.run(ip, username=u, password=p, domain=d, useProxy=isInternal)
-            rm.add((ip, u, p, _, d, proto, status))
-            d = d or '.'
-            if status == 1:
-                highlight('[+][rdp] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip), 1)
-            elif status == 0:
-                print('[-][rdp] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip))
+            queue.append((ip, u, p, d, isInternal))
+    def rdp_run(_):
+        ip, u, p, d, isInternal = _
+        status = rdpcheck.run(ip, username=u, password=p, domain=d, useProxy=isInternal)
+        rm.add((ip, u, p, _, d, proto, status))
+        d = d or '.'
+        if status == 1:
+            highlight('[+][rdp] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip), 1)
+        elif status == 0:
+            print('[-][rdp] ("%s\\%s", "%s") @ "%s"' % (d, u, p, ip))
+    if len(queue) > 0:
+        parallel.run(rdp_run, queue, verb=True)
 
 hm.export()
 rm.export()

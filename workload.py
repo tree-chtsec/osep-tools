@@ -56,3 +56,6 @@ class Manager:
 
     def remove_cheatsheet(self):
         os.remove(self.cheat)
+
+    def sort(self):
+        self.workloads.sort(key = lambda x: x['desc1'])
