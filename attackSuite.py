@@ -504,6 +504,7 @@ if netclr == 'v4.0' and _os == 'windows':
     pandora('installutil-3', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, pscmdType='enc', FILENAME='go.ps1')
     pandora('service-1', Tvar=dict(psraw=command), useTransform=False, FILENAME='svc.ps1')
     pandora('service-2', useTransform=False, FILENAME='svc_.ps1')
+    pandora('msbuild-1', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, FILENAME='gm.ps1') # TODO: amsi might need invoke first in stageless mode
     pandora('psexec-1', useTransform=False)
 
 for common_psmodule in app['common-pstool']:

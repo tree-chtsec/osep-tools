@@ -103,6 +103,11 @@
             "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary ( Invoke-ServicePwn -Name SNMPTRAP -Command whoami )",
             "filename": "bypass_clm_servicepwn.ps1"
         },
+        "msbuild-1": {
+            "lang": "powershell",
+            "description": "[C#] [Auto] Bypass PS CLM with msbuild",
+            "filename": "bypass_clm_msbuild.ps1"
+        },
         "ppl-1": {
             "lang": "powershell",
             "description": "Invoke-KillPPL",
@@ -205,7 +210,7 @@
             "filepath": "Invoke-PPLDump.ps1"
         },
         {
-            "name": "Invoke-Portscan -Hosts \"<cidr|172.16.134.150/29>\" -Ports \"22,80,443,445,1433,3389,5985\" | %{if($_.alive){\"$($_.Hostname),,$($_.openPorts)\"}}",
+            "name": "Invoke-portscan -Hosts \"172.16.134.150/29\" -Ports \"22,80,443,445,1433,3389,5985\" | %{if($_.alive){\"$($_.Hostname),,$($_.openPorts)\"}} ",
             "filepath": "../PowerSploit-master/Recon/Invoke-Portscan.ps1"
         },
 	{
