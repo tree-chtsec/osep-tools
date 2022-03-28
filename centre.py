@@ -29,7 +29,7 @@ class Manager:
             self.df = pd.read_csv(self.FILE, usecols=self.cols, dtype=self.dtype, na_filter=False)
         else:
             #print('[-] Create for you')
-            self.df = pd.DataFrame([], columns=self.cols, dtype=self.dtype)
+            self.df = pd.DataFrame([], columns=self.cols, dtype=str) # TODO: only accept one dtype in ctor
             self.modified = True
             self.export()
         self.init()
