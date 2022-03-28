@@ -41,5 +41,51 @@ Create various format of shellcode with non-trivial transformer (xor, base64, ca
 python3 shellcode_server.py -H localhost
 ```
 
+## centre credential/host/record manager
 
+Post-Exploitation Enumeration Tool designed for OSEP EXAM
 
+```
+usage: centre.py [-h] [--cme] [--rdp] [--import-lsa _LSA] [--import-ntds _NTDS] [--import-mini _MINIDUMP] [--import-nmap _NMAPXML] [-t ITARGET_IP]
+                 [-T ITARGET_NAME] [--reset] [--debug] [--noproxy]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --cme
+  --rdp
+  --import-lsa _LSA
+  --import-ntds _NTDS
+  --import-mini _MINIDUMP
+  --import-nmap _NMAPXML
+  -t ITARGET_IP, --itarget-ip ITARGET_IP
+                        must be IPv4 format
+  -T ITARGET_NAME, --itarget-name ITARGET_NAME
+  --reset
+  --debug
+  --noproxy
+```
+
+execution result
+```
++----+---------------+--------+----------------------------------+------------+
+|    | User          | Pass   | NTLM                             | Domain     |
+|----+---------------+--------+----------------------------------+------------|
+|  0 | sqlsvc        |        | ******************************** | ******.*** |
++----+---------------+--------+----------------------------------+------------+
++----+----------------+----------+--------------------+
+|    | IP             | HOST     | Ports              |
+|----+----------------+----------+--------------------|
+|  0 | 172.16.***.*** | dc04     | 5985 3389 445      |
+|  1 | 172.16.***.*** | sql05    | 1433 445 5985 3389 |
+|  2 | 172.16.***.*** | sql07    | 1433 445 5985 3389 |
+|  3 | 172.16.***.*** | client09 | 3389 445           |
++----+----------------+----------+--------------------+
+
+==== RCE machines ====
++----+----------------+---------------+--------+----------------------------------+------------+------------+----------+
+|    | IP             | User          | Pass   | NTLM                             | Domain     | Protocol   |   Status |
+|----+----------------+---------------+--------+----------------------------------+------------+------------+----------|
+|  0 | 172.16.***.*** | sqlsvc        |        | ******************************** | ******.*** | cme-mssql  |        1 |
++----+----------------+---------------+--------+----------------------------------+------------+------------+----------+
+======================
+```
