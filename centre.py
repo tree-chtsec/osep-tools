@@ -160,6 +160,7 @@ class RecordManager(Manager):
         _df = pd.DataFrame(self.df[self.df['User'].apply(lambda x: not x.endswith('$'))], columns=self.cols)
         # cme smb pwned
         pwn_cme_smb = _df[(_df['Protocol'] == 'cme-smb') & (_df['Status'] == 2)]
+        pwn_cme_winrm = _df[(_df['Protocol'] == 'cme-winrm') & (_df['Status'] == 2)]
         pwn_cme_mssqladm = _df[(_df['Protocol'] == 'cme-mssql') & (_df['Status'] == 2)]
         pwn_cme_mssql = _df[(_df['Protocol'] == 'cme-mssql') & (_df['Status'] == 1)]
         pwn_rdp = _df[(_df['Protocol'] == 'rdp') & (_df['Status'] == 1)]
@@ -171,9 +172,9 @@ class RecordManager(Manager):
         pwn_dumpdu = pwn_dump[pwn_dump['Domain'] != '.']
 
         if adminOnly:
-            pwndf = pd.concat([pwn_cme_smb, pwn_cme_mssqladm, pwn_dumpadm])
+            pwndf = pd.concat([pwn_cme_smb, pwn_cme_winrm, pwn_cme_mssqladm, pwn_dumpadm])
         else:
-            pwndf = pd.concat([pwn_cme_smb, pwn_cme_mssql, pwn_cme_mssqladm, pwn_rdp, pwn_dumpadm, pwn_dumpdu])
+            pwndf = pd.concat([pwn_cme_smb, pwn_cme_winrm, pwn_cme_mssql, pwn_cme_mssqladm, pwn_rdp, pwn_dumpadm, pwn_dumpdu])
         if ip is not None:
             pwndf = pwndf[pwndf['IP'] == ip]
         pwndf = pwndf.reset_index(drop=True)
@@ -310,7 +311,8 @@ if args.cme:
     import cmecheck
     candidates = [
         ('smb', '445'),
-        ('mssql', '1433')
+        ('mssql', '1433'),
+        ('winrm', '5985')
     ]
     for proto, port in candidates:
         queue = []

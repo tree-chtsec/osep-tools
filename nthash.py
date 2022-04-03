@@ -6,4 +6,4 @@ def convert(s):
 
 if __name__ == '__main__':
     import sys
-    convert(sys.stdin.read())
+    print(convert(sys.stdin.read()))
