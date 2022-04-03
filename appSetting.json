@@ -3,72 +3,72 @@
         "ps-amsi": {
             "lang": "powershell",
             "description": "AMSI Bypass",
-            "filename": "amsibypass4.ps1"
+            "filename": "scripts/amsibypass4.ps1"
         },
 	"defender-1": {
 	    "lang": "powershell",
 	    "description": "Clear DefenderLoaded Rules",
-	    "filename": "cleanDefenderRule.ps1"
+	    "filename": "scripts/cleanDefenderRule.ps1"
 	}
     },
     "template": {
         "py-1": {
             "lang": "python",
             "description": "[PYTHON] In-memory Shellcode Runner",
-            "filename": "buffshark_template.py"
+            "filename": "scripts/buffshark_template.py"
         },
         "ps-1": {
             "lang": "powershell",
             "description": "[PS] Reflective In-memory Shellcode Runner",
-            "filename": "shellcode_runner_mem_template.ps1"
+            "filename": "scripts/shellcode_runner_mem_template.ps1"
         },
         "ps-2": {
             "lang": "powershell",
             "description": "[PS] Reflective In-memory Unmanaged PE Runner",
-            "filename": "peinject_template.ps1"
+            "filename": "scripts/peinject_template.ps1"
         },
         "aspx-1": {
             "lang": "csharp",
             "description": "[ASPX] Process Injection (NtSession) Shellcode Runner",
-            "filename": "shellcode_injector_ntsession_template.aspx"
+            "filename": "scripts/shellcode_injector_ntsession_template.aspx"
         },
         "load-exe-1": {
             "lang": "powershell",
             "description": "Import C# Assembly into PS",
-            "filename": "load_exe1_template.ps1"
+            "filename": "scripts/load_exe1_template.ps1"
         },
         "cs-1": {
             "lang": "csharp",
             "description": "[C#] Process Injection (NtSession) Shellcode Runner",
-            "filename": "shellcode_injector_ntsession_template.cs",
+            "filename": "scripts/shellcode_injector_ntsession_template.cs",
             "exe": true
         },
         "cs-2": {
             "lang": "csharp",
             "description": "[C#] Process Hollowing Shellcode Runner (SeImpersonatePrivilege required) with SpoolSample",
-            "filename": "printspoofer_template.cs",
+            "filename": "scripts/printspoofer_template.cs",
             "exe": true
         },
         "cs-3": {
             "lang": "csharp",
             "description": "[C#] Process Hollowing Shellcode Runner",
-            "filename": "process_hollow_shellcodeAuto_template.cs",
+            "filename": "scripts/process_hollow_shellcodeAuto_template.cs",
             "exe": true
         },
         "custom-ps": {
             "lang": "powershell",
             "description": "Custom Powershell Script",
-            "filename": "custom_template.ps1"
+            "filename": "scripts/custom_template.ps1"
         },
         "vb-1": {
             "lang": "vba",
             "description": "[VBA Macro] In-memory Shellcode Runner",
-            "filename": "shellcode_runner_template.vb"
+            "filename": "scripts/shellcode_runner_template.vb"
         },
         "installutil-1": {
             "lang": "csharp",
             "description": "[C#] [Generic] Bypass PS CLM (c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\installutil.exe /logfile= /logtoconsole=false /U c:\\path\\to\\this.exe)",
-            "filename": "bypass_clm_installutil.cs",
+            "filename": "scripts/bypass_clm_installutil.cs",
             "exe": true,
             "references": [
                 "dlls/v4.0/System.Management.Automation.dll"
@@ -77,7 +77,7 @@
         "installutil-2": {
             "lang": "csharp",
             "description": "[C#] [Generic] Bypass PS CLM (c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\installutil.exe /logfile= /logtoconsole=false /U c:\\path\\to\\this.exe) hard-coded ps path",
-            "filename": "bypass_clm_installutil_psfile.cs",
+            "filename": "scripts/bypass_clm_installutil_psfile.cs",
             "exe": true,
             "references": [
                 "dlls/v4.0/System.Management.Automation.dll"
@@ -86,49 +86,49 @@
         "installutil-3": {
             "lang": "powershell",
             "description": "[C#] [Auto] Bypass PS CLM with InstallUtil",
-            "filename": "bypass_clm_installutil.ps1"
+            "filename": "scripts/bypass_clm_installutil.ps1"
         },
         "installutil-4": {
             "lang": "powershell",
             "description": "[C#] FLM pseudo Powershell ( Invoke-FLM )",
-            "filename": "bypass_clm_installutil_pseudoShell.ps1"
+            "filename": "scripts/bypass_clm_installutil_pseudoShell.ps1"
         },
         "service-1": {
             "lang": "powershell",
             "description": "[C#] [Auto] Bypass PS CLM with ServiceBinary",
-            "filename": "bypass_clm_service.ps1"
+            "filename": "scripts/bypass_clm_service.ps1"
         },
         "service-2": {
             "lang": "powershell",
             "description": "[C#] [Generic] Bypass PS CLM with ServiceBinary ( Invoke-ServicePwn -Name SNMPTRAP -Command whoami )",
-            "filename": "bypass_clm_servicepwn.ps1"
+            "filename": "scripts/bypass_clm_servicepwn.ps1"
         },
         "msbuild-1": {
             "lang": "powershell",
             "description": "[C#] [Auto] Bypass PS CLM with msbuild",
-            "filename": "bypass_clm_msbuild.ps1"
+            "filename": "scripts/bypass_clm_msbuild.ps1"
         },
         "ppl-1": {
             "lang": "powershell",
             "description": "Invoke-KillPPL",
-            "filename": "Kill_PPL.ps1"
+            "filename": "scripts/Kill_PPL.ps1"
         },
         "psexec-1": {
             "lang": "powershell",
             "description": "[PS] [Generic] IPsExec -ComputerName xxx -Command whoami",
-            "filename": "psexec.ps1"
+            "filename": "scripts/psexec.ps1"
         },
         "c-1": {
             "lang": "c",
             "description": "[GCC] Shellcode Runner",
-            "filename": "shellcode_runner.c",
+            "filename": "scripts/shellcode_runner.c",
 	    "elf": true,
 	    "platform": "linux"
         },
         "c-2": {
             "lang": "c",
             "description": "[GCC] Custom Syscall Runner",
-            "filename": "syscall_template.c",
+            "filename": "scripts/syscall_template.c",
 	    "elf": true,
 	    "platform": "linux"
         }
@@ -207,7 +207,7 @@
         },
 	{
 	    "name": "Invoke-GodWrite -Victim appsrv01 -Domain prod.corp1.com -DomainController cdc01",
-	    "filepath": "Abuse_GenericWrite_Computer.ps1",
+	    "filepath": "scripts/Abuse_GenericWrite_Computer.ps1",
 	    "dependency": [
                 "PowerView.ps1",
                 "PowerMAD.ps1",
@@ -216,7 +216,7 @@
 	},
 	{
 	    "name": "Invoke-TrustTicket -Rc4 <trustKey> -From dc01.final.com -To dc02.dev.final.com -SpnT ldap/dc02.dev.final.com",
-	    "filepath": "Create_TrustTicket.ps1",
+	    "filepath": "scripts/Create_TrustTicket.ps1",
 	    "dependency": [
                 "PowerView.ps1",
 		"Rubeus"
