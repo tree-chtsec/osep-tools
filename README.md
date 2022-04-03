@@ -79,7 +79,7 @@ cheatsheet output: $HOME/.cheats/osep_hunter.md    ( Only exist when attackSuite
 
 ![](images/screenshot-attackSuite-arsenal.png)
                                         
-## centre credential/host/record manage r
+## centre credential/host/record manager
                                         
 Post-Exploitation Enumeration Tool desi gned for OSEP EXAM
                                         
