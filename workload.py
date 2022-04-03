@@ -18,7 +18,7 @@ class Manager:
                 _cmd = self.get_iex_data(w['cmd']) if self.stageless else w['cmd']
                 result.append(_cmd)
         if len(result) < n:
-            print('Manager::getCmd find %d record. But specified n = %d' % (len(result), n))
+            print('Manager::getCmd ["%s", "%s"] find %d record. But specified n = %d' % (desc1, desc2, len(result), n))
             return ''
         if n == 1: # auto-flatten
             return result[0]
