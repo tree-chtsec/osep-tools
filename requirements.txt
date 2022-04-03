@@ -5,4 +5,4 @@ pypykatz==0.3.7
 pandas==1.1.5
 tabulate==0.8.7
 termcolor==1.1.0
-lxml==4.6.3
+lxml==4.8.0
