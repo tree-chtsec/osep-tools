@@ -68,10 +68,10 @@
         "installutil-1": {
             "lang": "csharp",
             "description": "[C#] [Generic] Bypass PS CLM (c:\\windows\\microsoft.net\\framework64\\v4.0.30319\\installutil.exe /logfile= /logtoconsole=false /U c:\\path\\to\\this.exe)",
-            "filename": "../csharp/bypass_clm_installutil.cs",
+            "filename": "bypass_clm_installutil.cs",
             "exe": true,
             "references": [
-                "../dlls/v4.0/System.Management.Automation.dll"
+                "dlls/v4.0/System.Management.Automation.dll"
             ]
         },
         "installutil-2": {
@@ -80,7 +80,7 @@
             "filename": "bypass_clm_installutil_psfile.cs",
             "exe": true,
             "references": [
-                "../dlls/v4.0/System.Management.Automation.dll"
+                "dlls/v4.0/System.Management.Automation.dll"
             ]
         },
         "installutil-3": {
@@ -136,82 +136,74 @@
     "common-pstool": [
         {
             "name": "LAPSToolkit.ps1 ( Get-LAPSComputers )",
-            "filepath": "../LAPSToolkit-master/LAPSToolkit.ps1"
+            "filepath": "thirdparty_libs/LAPSToolkit.ps1"
         },
         {
             "name": "Inveigh",
-            "filepath": "../Inveigh.ps1"
+            "filepath": "thirdparty_libs/Inveigh.ps1"
         },
         {
             "name": "PowerUp.ps1",
-            "filepath": "../PowerSploit-master/Privesc/PowerUp.ps1"
-        },
-        {
-            "name": "SharpHound.ps1 [Failed in Bloodhound 4.1.0]",
-            "filepath": "../SharpHound-old.ps1"
+            "filepath": "thirdparty_libs/PowerUp.ps1"
         },
         {
             "name": "MimiKatz.ps1",
-            "filepath": "../Invoke-Mimidogz.ps1"
-        },
-        {
-            "name": "BypassUAC with FodHelper",
-            "filepath": "../ps/bypass_uac_fodhelper.ps1"
+            "filepath": "thirdparty_libs/Invoke-Mimidogz.ps1"
         },
         {
             "name": "PowerView.ps1",
-            "filepath": "../PowerSploit-master/Recon/PowerView.ps1"
+            "filepath": "thirdparty_libs/PowerView.ps1"
         },
         {
             "name": "PowerUpSQL.ps1",
-            "filepath": "../PowerUpSQL-master/PowerUpSQL.ps1",
+            "filepath": "thirdparty_libs/PowerUpSQL.ps1",
 	    "dependency": [
 		"Inveigh"
 	    ]
         },
         {
             "name": "SpoolFool.ps1",
-            "filepath": "SpoolFool.ps1"
+            "filepath": "thirdparty_libs/SpoolFool.ps1"
         },
         {
             "name": "minidump.ps1",
-            "filepath": "../ps/minidump.ps1"
+            "filepath": "thirdparty_libs/minidump.ps1"
         },
         {
             "name": "Enum-ADTrusts.ps1",
-            "filepath": "Enum-ADTrusts.ps1"
+            "filepath": "thirdparty_libs/Enum-ADTrusts.ps1"
         },
         {
             "name": "PowerMAD.ps1",
-            "filepath": "../ps/powermad.ps1"
+            "filepath": "thirdparty_libs/powermad.ps1"
         },
         {
             "name": "Invoke-SMBExec.ps1",
-            "filepath": "../Invoke-TheHash/Invoke-SMBExec.ps1"
+            "filepath": "thirdparty_libs/Invoke-SMBExec.ps1"
         },
         {
             "name": "Invoke-WMIExec.ps1",
-            "filepath": "../Invoke-TheHash/Invoke-WMIExec.ps1"
+            "filepath": "thirdparty_libs/Invoke-WMIExec.ps1"
         },
         {
             "name": "Invoke-PsExec -Computername appsrv01 -command whoami -resultfile $env:tmp\\out.txt",
-            "filepath": "../Invoke-PsExec.ps1"
+            "filepath": "thirdparty_libs/Invoke-PsExec.ps1"
         },
         {
             "name": "Invoke-ReflectivePEInjection.ps1",
-            "filepath": "Invoke-ReflectivePEInjection.ps1"
+            "filepath": "thirdparty_libs/Invoke-ReflectivePEInjection.ps1"
         },
         {
             "name": "ADRecon.ps1",
-            "filepath": "../ADRecon-master/ADRecon.ps1"
+            "filepath": "thirdparty_libs/ADRecon.ps1"
         },
         {
             "name": "Invoke-PPLDump",
-            "filepath": "Invoke-PPLDump.ps1"
+            "filepath": "thirdparty_libs/Invoke-PPLDump.ps1"
         },
         {
             "name": "Invoke-portscan -Hosts \"172.16.134.150/29\" -Ports \"22,80,443,445,1433,3389,5985\" | %{if($_.alive){\"$($_.Hostname),,$($_.openPorts)\"}} ",
-            "filepath": "../PowerSploit-master/Recon/Invoke-Portscan.ps1"
+            "filepath": "thirdparty_libs/Invoke-Portscan.ps1"
         },
 	{
 	    "name": "Invoke-GodWrite -Victim appsrv01 -Domain prod.corp1.com -DomainController cdc01",
