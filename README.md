@@ -1,6 +1,27 @@
 # osep-tools
 
+## 3rd Party Library Version Info
+
+* SharpHound [1.0.3](https://github.com/BloodHoundAD/SharpHound/commit/97f5d42bbb9c049e5f2ae14d6f9306358f92d8cf)
+* CrackMapExec [5.2.1](https://github.com/byt3bl33d3r/CrackMapExec/commit/e9bcd09bd2c862200a40ecdc431fcf56f0ae5b67)
+
+## msf api server
+
+Create various format of shellcode with non-trivial transformer (xor, base64, caesar).
+
+```
+python3 shellcode_server.py -H localhost
+```
+
+![](images/screenshot-msfapiserv.png)
+
 ## AttackSuite
+
+### Setup
+
+```
+pip3 install -r requirements.txt
+```
 
 Core Function, must accompany with `shellcode_server.py` now. Can integrate with other C2 framework such as Covenant.
 
@@ -33,18 +54,35 @@ optional arguments:
   --stageless           create stageless payload (no interact with this http server)
 ```
 
-## msf api server
+![](images/screenshot-attackSuite.png)
 
-Create various format of shellcode with non-trivial transformer (xor, base64, caesar).
+### pre-defined scripts with fixed name
+
+`http://<IP>:<PORT>/<name>`
+
+| name | Function |
+| ------ | ------ |
+| /pk.ps1    | Invoke-KillPPL            |
+| /flm.ps1   | Invoke-FLM                |
+| /go.ps1    | met(x64) installutil      |
+| /gm.ps1    | met(x64) msbuild          |
+| /rev.ps1   | reverse flm shell         |
+| /svc.ps1   | met(?) in service binary  |
+| /svc_.ps1  | Invoke-ServicePwn         |
+
+### arsenal integration
 
 ```
-python3 shellcode_server.py -H localhost
+alias a="arsenal"
+cheatsheet output: $HOME/.cheats/osep_hunter.md    ( Only exist when attackSuite is runing )
 ```
 
-## centre credential/host/record manager
-
-Post-Exploitation Enumeration Tool designed for OSEP EXAM
-
+![](images/screenshot-attackSuite-arsenal.png)
+                                        
+## centre credential/host/record manage r
+                                        
+Post-Exploitation Enumeration Tool desi gned for OSEP EXAM
+                                        
 ```
 usage: centre.py [-h] [--cme] [--rdp] [--import-lsa _LSA] [--import-ntds _NTDS] [--import-mini _MINIDUMP] [--import-nmap _NMAPXML] [-t ITARGET_IP]
                  [-T ITARGET_NAME] [--reset] [--debug] [--noproxy]

