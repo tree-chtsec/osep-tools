@@ -17,10 +17,18 @@ python3 shellcode_server.py -H localhost
 
 ## AttackSuite
 
-### Setup
+### Setup I
 
 ```
 pip3 install -r requirements.txt
+```
+
+### Setup II
+
+Tools to compile `CSharp EXE` & `linux elf` in Kali (ARM64).
+
+```
+sudo apt install -y mono-complete gcc-11-x86-64-linux-gnu
 ```
 
 Core Function, must accompany with `shellcode_server.py` now. Can integrate with other C2 framework such as Covenant.
@@ -69,6 +77,7 @@ optional arguments:
 | /rev.ps1   | reverse flm shell         |
 | /svc.ps1   | met(?) in service binary  |
 | /svc_.ps1  | Invoke-ServicePwn         |
+| /msi       | Write-MSI                 |
 
 ### arsenal integration
 

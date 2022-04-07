@@ -113,6 +113,11 @@
             "description": "Invoke-KillPPL",
             "filename": "scripts/Kill_PPL.ps1"
         },
+        "msi-1": {
+            "lang": "powershell",
+            "description": "Invoke-MSIExec / Write-MSI",
+            "filename": "scripts/msi.ps1"
+        },
         "psexec-1": {
             "lang": "powershell",
             "description": "[PS] [Generic] IPsExec -ComputerName xxx -Command whoami",
