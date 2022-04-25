@@ -31,6 +31,8 @@ Tools to compile `CSharp EXE` & `linux elf` in Kali (ARM64).
 sudo apt install -y mono-complete gcc-11-x86-64-linux-gnu
 ```
 
+### Intro
+
 Core Function, must accompany with `shellcode_server.py` now. Can integrate with other C2 framework such as Covenant.
 
 ```bash
@@ -91,8 +93,16 @@ cheatsheet output: $HOME/.cheats/osep_hunter.md    ( Only exist when attackSuite
                                         
 ## centre credential/host/record manager
                                         
-Post-Exploitation Enumeration Tool desi gned for OSEP EXAM
+Post-Exploitation Enumeration Tool designed for OSEP EXAM
                                         
+### Setup
+
+```
+pip3 install -r requirements-centre.txt
+```
+
+### Intro
+
 ```
 usage: centre.py [-h] [--cme] [--rdp] [--import-lsa _LSA] [--import-ntds _NTDS] [--import-mini _MINIDUMP] [--import-nmap _NMAPXML] [-t ITARGET_IP]
                  [-T ITARGET_NAME] [--reset] [--debug] [--noproxy]
