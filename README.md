@@ -23,6 +23,12 @@ python3 shellcode_server.py -H localhost
 pip3 install -r requirements.txt
 ```
 
+Put following command into `~/.zshrc`
+
+```
+alias a="$HOME/.local/bin/arsenal"
+```
+
 ### Setup II
 
 Tools to compile `CSharp EXE` & `linux elf` in Kali (ARM64).
@@ -100,6 +106,14 @@ Post-Exploitation Enumeration Tool designed for OSEP EXAM
 ```
 pip3 install -r requirements-centre.txt
 ```
+
+Put following command into `~/.zshrc`.
+
+```
+alias centre.py="/path/to/centre.py"
+```
+
+You can type `centre.py` everywhere, creating `credential/host/record` in current working directory.
 
 ### Intro
 
