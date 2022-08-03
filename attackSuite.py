@@ -459,6 +459,7 @@ cs_exe('thirdparty_libs/SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGrou
 cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS', FILENAME='wlpc')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
+cs_exe('thirdparty_libs/KrbRelayUp.exe', 'KrbRelayUp')
 
 for common_psmodule in app['common-pstool']:
     c = ''
