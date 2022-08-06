@@ -120,7 +120,7 @@
         },
         "psexec-1": {
             "lang": "powershell",
-            "description": "[PS] [Generic] IPsExec -ComputerName xxx -Command whoami",
+            "description": "[PS] [Generic] IPsExec -ComputerName xxx -Command 'whoami ^>c:\\windows\\temp\\output.txt'",
             "filename": "scripts/psexec.ps1"
         },
         "c-1": {
