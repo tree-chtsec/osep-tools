@@ -170,6 +170,9 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         fullpath = os.path.join(self.server.base_path, relpath)
         return fullpath
 
+    def list_directory(self, path):
+        self.send_error(418)
+
 class HTTPServer(BaseHTTPServer):
     """The main server, you pass in base_path which is the path you want to serve requests from"""
     def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
