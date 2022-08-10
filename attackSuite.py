@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import glob
@@ -438,6 +439,11 @@ def ez_fit(filepath, **tvar):
     Tcode = open(filepath, 'r').read()
     return fit(Tcode, tvar).encode()
 
+def getCsExe(command):
+    # extract the last part of command
+    EXE_NAME = re.search(r'/([\w.]+\.exe)$', command).group(1)
+    return os.path.join(TempUtil.getTempDir(), EXE_NAME)
+
 # ===================
 
 
@@ -450,7 +456,7 @@ pandora('ps-1', pscmdType='enc')
 #        postCode='[System.Text.Encoding]::ASCII.GetString($ii)|iex')))
 pandora('aspx-1', Tvar=dict(inject_name=args.inject))
 pandora('cs-1', Tvar=dict(inject_name=args.inject))
-pandora('cs-2')
+pandora('cs-2', desc='myPrintSpoofer')
 pandora('cs-3')
 pandora('vb-1')
 
@@ -462,7 +468,8 @@ cs_exe('thirdparty_libs/SharpHound.exe', 'Invoke-Bloodhound -c "All,GPOLocalGrou
 cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS', FILENAME='wlpc')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
-cs_exe('thirdparty_libs/KrbRelayUp.exe', 'KrbRelayUp')
+cs_exe('thirdparty_libs/KrbRelayUp.exe', 'Invoke-KrbRelayUp')
+cs_exe(getCsExe(wlmgr.getCmd(desc2='myPrintSpoofer')), 'Invoke-PrintSpoofer # Abuse SeImpersonatePrivilege', classname='GG.GGL')
 
 for common_psmodule in app['common-pstool']:
     c = ''

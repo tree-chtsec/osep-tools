@@ -9992,7 +9992,7 @@ namespace GG
 
 %libtransform%
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             if ((int)FlsAlloc(IntPtr.Zero) == -1)
                 return;

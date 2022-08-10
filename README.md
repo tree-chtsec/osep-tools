@@ -87,6 +87,7 @@ optional arguments:
 | /svc_.ps1  | Invoke-ServicePwn         |
 | /msi       | Write-MSI                 |
 | /llpe      | linux LPE (cve-2021-4034) |
+| /wlpc      | Invoke-WinPeas            |
 
 ### arsenal integration
 
