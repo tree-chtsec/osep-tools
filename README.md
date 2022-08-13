@@ -19,6 +19,7 @@ python3 shellcode_server.py -H localhost
 
 ### Setup I
 
+Something useful in red team auditing.
 ```
 pip3 install -r requirements.txt
 ```
@@ -31,11 +32,22 @@ alias a="$HOME/.local/bin/arsenal"
 
 ### Setup II
 
-Tools to compile `CSharp EXE` & `linux elf` in Kali (ARM64).
+#### For ARM64 Kali
+
+Tools to compile `CSharp EXE` & `linux elf`.
 
 ```
 sudo apt install -y mono-complete gcc-11-x86-64-linux-gnu
 ```
+
+#### For AMD64 Kali
+
+Tools to compile `CSharp EXE`.
+
+```
+sudo apt install -y mono-complete
+```
+
 
 ### Intro
 
@@ -46,8 +58,10 @@ python3 attackSuite.py -a win -b 64 -i 192.168.49.134 -p 80 -P 443 --payload met
 ```
 
 ```
-usage: attackSuite.py [-h] [-a {win,nix}] [-b {32,64}] [-n {2,4}] -i IP -p PORT -P RPORT [-gP GPORT] [--payload PAYLOAD] [--inject INJECT] [--chome CHOME] [--mhome MHOME]
-                      [--ps1 PS1] [--chain CHAIN] [--stageless] [--csc CSC] [--gcc GCC]
+usage: attackSuite.py [-h] [-a {win,nix}] [-b {32,64}] [-n {2,4}] -i IP -p PORT -P RPORT [-r REVPORT]
+                      [-gP GPORT] [--payload PAYLOAD] [--inject INJECT] [--chome CHOME]
+                      [--mhome MSF_WORKDIR] [--ps1 PS1] [--chain CHAIN] [--stageless] [--csc CSC]
+                      [--gcc GCC]
 
 Python Shellcode Runner
 
@@ -63,11 +77,20 @@ optional arguments:
   -p PORT, --port PORT  HTTP Listener Port
   -P RPORT, --rport RPORT
                         msf Listener Port
+  -r REVPORT, --revport REVPORT
+                        NC Listener Port
+  -gP GPORT, --gport GPORT
+                        grunt Listener Port
   --payload PAYLOAD     meterpreter payload used
   --inject INJECT       target process to inject
+  --chome CHOME         Covenant home directory
+  --mhome MSF_WORKDIR   Metasploit Custom Meterpreter Scripts directory.
   --ps1 PS1             path to custom powershell script
-  --chain CHAIN         payload transform expression, separated by "-" Ex. xor-ii1e12e1 => xor($buf, 'ii1e12e1') xor-eegg-cae-10 => cae(xor($buf, 'eegg'), 10)
+  --chain CHAIN         payload transform expression, separated by "-" Ex. xor-ii1e12e1 => xor($buf,
+                        'ii1e12e1') xor-eegg-cae-10 => cae(xor($buf, 'eegg'), 10)
   --stageless           create stageless payload (no interact with this http server)
+  --csc CSC             C# compiler command
+  --gcc GCC             GNU compiler command
 ```
 
 ![](images/screenshot-attackSuite.png)

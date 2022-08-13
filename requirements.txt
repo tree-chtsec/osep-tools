@@ -1,5 +1,5 @@
 requests
-impacket==0.9.24
+impacket
 arsenal-cli==1.1.1
 pypykatz==0.3.7
 pandas==1.1.5

