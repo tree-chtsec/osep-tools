@@ -2,7 +2,7 @@
 
 ## 3rd Party Library Version Info
 
-* SharpHound [1.0.3](https://github.com/BloodHoundAD/SharpHound/commit/97f5d42bbb9c049e5f2ae14d6f9306358f92d8cf)
+* SharpHound [1.1.0](https://github.com/BloodHoundAD/SharpHound/commit/22e5985802c510ad9dc0864d2dd8b476d14248d1)
 * CrackMapExec [5.2.1](https://github.com/byt3bl33d3r/CrackMapExec/commit/e9bcd09bd2c862200a40ecdc431fcf56f0ae5b67)
 
 ## msf api server
