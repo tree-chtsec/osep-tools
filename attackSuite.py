@@ -469,6 +469,7 @@ cs_exe('thirdparty_libs/winPEAS.exe', 'winPEAS', FILENAME='wlpc')
 cs_exe('csharp/myPsExec.exe', 'Invoke-myPsExec appsrv01 SensorDataService "powershell -c `"iwr ...`""', 'myPsExec.Program')
 cs_exe('csharp/SQL.exe', 'Invoke-SQL "<servername>" "<sql>" # separator = `n', 'SQL.SQL')
 cs_exe('thirdparty_libs/KrbRelayUp.exe', 'Invoke-KrbRelayUp')
+cs_exe('csharp/runasCs.exe', 'Invoke-RunasCs <username> <password> <command>', 'Runas.Runas')
 if wlmgr.getCmd(desc2='myPrintSpoofer').endswith('.exe'):
     cs_exe(getCsExe(wlmgr.getCmd(desc2='myPrintSpoofer')), 'Invoke-PrintSpoofer # Abuse SeImpersonatePrivilege', classname='GG.GGL', funcname='Invoke-PrintSpoofer')
 
